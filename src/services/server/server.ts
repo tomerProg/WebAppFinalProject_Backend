@@ -2,6 +2,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import * as http from 'http';
+import swaggerUI from 'swagger-ui-express';
+import specs from '../../swagger';
 import { Service } from '../service';
 import { ServerConfig } from './config';
 import { expressAppRoutesErrorHandler } from './utils';
@@ -27,7 +29,9 @@ export class Server extends Service {
         this.app.use(cors());
     };
 
-    useRouters = () => {};
+    useRouters = () => {
+        this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
+    };
 
     useErrorHandler = () => {
         this.app.use(expressAppRoutesErrorHandler);
