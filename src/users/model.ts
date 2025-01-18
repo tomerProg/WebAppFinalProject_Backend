@@ -1,6 +1,34 @@
 import { Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
 
+/**
+ *  @swagger
+ *  components:
+ *    schemas:
+ *      User:
+ *        type: object
+ *        required:
+ *          - email
+ *          - password
+ *        properties:
+ *          email:
+ *            type: string
+ *            description: The user email
+ *          password:
+ *            type: string
+ *            description: The user password
+ *          nickname:
+ *            type: string
+ *            description: the nickname of the user
+ *          profileImage:
+ *            type: string
+ *            description: path to the user profile image
+ *        example:
+ *          email: 'tomercpc01@gmail.com'
+ *          password: '123456'
+ *          nickname: king__doom
+ */
+
 export interface User {
     email: string;
     password: string;

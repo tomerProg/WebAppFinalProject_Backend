@@ -1,26 +1,37 @@
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import request from 'supertest';
+import { createTestingAuthMiddlewareWithUser } from '../../authentication/__tests__/utils';
+import { createDatabaseConfig } from '../../services/database/config';
+import { Database } from '../../services/database/database';
 import { createTestingAppForRouter } from '../../services/server/__tests__/utils';
+import { createTestEnv } from '../../utils/tests';
 import { User } from '../model';
 import { createUsersRouter } from '../router';
 import { EditUserRequest } from '../validators';
 
 describe('users route', () => {
+    const env = createTestEnv();
+    const database = new Database(createDatabaseConfig(env));
+    const { userModel } = database.getModels();
+
     const testUser: User & { _id: Types.ObjectId } = {
         _id: new Types.ObjectId(),
         email: 'tomercpc01@gmail.com',
         nickname: 'king__doom',
         password: '123456'
     };
-    const usersRouter = createUsersRouter();
+    const authMiddleware = jest.fn(
+        createTestingAuthMiddlewareWithUser(testUser)
+    );
+    const usersRouter = createUsersRouter(authMiddleware, { userModel });
     const app = createTestingAppForRouter('/user', usersRouter);
 
     beforeAll(async () => {
-        // await database.start();
+        await database.start();
     });
     afterAll(async () => {
-        // await database.stop();
+        await database.stop();
     });
 
     beforeEach(async () => {
