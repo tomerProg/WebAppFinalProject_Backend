@@ -6,6 +6,7 @@ import { SystemConfig } from './config';
 export class System extends Service {
     private readonly server: Server;
     private readonly database: Database;
+    
     constructor(private readonly config: SystemConfig) {
         super();
         const { serverConfig, databaseConfig } = this.config;
@@ -14,10 +15,12 @@ export class System extends Service {
     }
 
     async start() {
+        await this.database.start();
         await this.server.start();
     }
 
     async stop() {
         await this.server.stop();
+        await this.database.stop();
     }
 }
