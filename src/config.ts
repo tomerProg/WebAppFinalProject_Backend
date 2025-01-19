@@ -4,7 +4,8 @@ import { z } from 'zod';
 dotenv.config();
 
 const environmentVariablesZodScema = z.object({
-    PORT: z.coerce.number()
+    PORT: z.coerce.number(),
+    SERVICE_DOMAIN: z.string()
 });
 export type EnvironmentVariables = z.infer<typeof environmentVariablesZodScema>;
 

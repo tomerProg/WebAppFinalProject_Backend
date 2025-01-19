@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import * as http from 'http';
+import { createFileRouter } from '../../files/router';
 import { Service } from '../service';
 import { ServerConfig } from './config';
 import { expressAppRoutesErrorHandler } from './utils';
@@ -9,9 +10,11 @@ import { expressAppRoutesErrorHandler } from './utils';
 export class Server extends Service {
     private app: Express;
     private server: http.Server;
+    private serverUrl: string;
 
     constructor(private readonly config: ServerConfig) {
         super();
+        const { port, domain } = config;
 
         this.app = express();
         this.useMiddlewares();
@@ -19,6 +22,7 @@ export class Server extends Service {
         this.useErrorHandler();
 
         this.server = http.createServer(this.app);
+        this.serverUrl = `http://${domain}:${port}/`;
     }
 
     useMiddlewares = () => {
@@ -27,7 +31,9 @@ export class Server extends Service {
         this.app.use(cors());
     };
 
-    useRouters = () => {};
+    useRouters = () => {
+        this.app.use('/file', createFileRouter({ serverUrl: this.serverUrl }));
+    };
 
     useErrorHandler = () => {
         this.app.use(expressAppRoutesErrorHandler);
