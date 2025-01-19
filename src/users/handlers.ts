@@ -6,10 +6,10 @@ import { BadRequestError } from '../services/server/exceptions';
 export const editUser = (userModel: UserModel) =>
     validateEditUserRequest(async (request, response) => {
         const { id: userId } = request.user;
-        const { nickname, profileImage } = request.body;
+        const { username, profileImage } = request.body;
         const { modifiedCount } = await userModel.updateOne(
             { _id: userId },
-            { nickname, profileImage }
+            { username, profileImage }
         );
 
         if (!modifiedCount || modifiedCount === 0) {

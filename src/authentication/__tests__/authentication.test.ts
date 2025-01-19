@@ -30,7 +30,7 @@ describe('authentication tests', () => {
     const testUser: User = {
         email: 'tomercpc01@gmail.com',
         password: '123456',
-        nickname: 'tester'
+        username: 'tester'
     };
 
     const loginUser = async (user: User) => {

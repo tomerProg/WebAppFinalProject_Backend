@@ -39,10 +39,10 @@ export const createUsersRouter = (
      *           schema:
      *             type: object
      *             properties:
-     *               nickname:
+     *               username:
      *                 type: string
-     *                 description: user new nickname
-     *                 example: new user nickname
+     *                 description: user new username
+     *                 example: new user username
      *               profileImage:
      *                 type: string
      *                 description: path (in server) of new profile image

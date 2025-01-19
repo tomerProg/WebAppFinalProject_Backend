@@ -17,22 +17,22 @@ import { z } from 'zod';
  *          password:
  *            type: string
  *            description: The user password
- *          nickname:
+ *          username:
  *            type: string
- *            description: the nickname of the user
+ *            description: the username of the user
  *          profileImage:
  *            type: string
  *            description: path to the user profile image
  *        example:
  *          email: 'tomercpc01@gmail.com'
  *          password: '123456'
- *          nickname: king__doom
+ *          username: king__doom
  */
 
 export interface User {
     email: string;
     password: string;
-    nickname: string;
+    username: string;
     profileImage?: string;
     refreshToken?: string[];
 }
@@ -40,7 +40,7 @@ export interface User {
 export const userZodSchema: z.ZodType<User> = z.object({
     email: z.string(),
     password: z.string(),
-    nickname: z.string(),
+    username: z.string(),
     profileImage: z.string().optional(),
     refreshToken: z.array(z.string()).default([])
 });
@@ -48,7 +48,7 @@ export const userZodSchema: z.ZodType<User> = z.object({
 const userSchema = new Schema<User>({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    nickname: { type: String, required: true },
+    username: { type: String, required: true },
     profileImage: String,
     refreshToken: { type: [String], default: [] }
 });

@@ -5,7 +5,7 @@ import { validateRequest } from '../services/server/utils';
 const editUserRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         body: z.object({
-            nickname: z.string().optional(),
+            username: z.string().optional(),
             profileImage: z.string().optional()
         })
     })

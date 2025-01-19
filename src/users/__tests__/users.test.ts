@@ -18,7 +18,7 @@ describe('users route', () => {
     const testUser: User & { _id: Types.ObjectId } = {
         _id: new Types.ObjectId(),
         email: 'tomercpc01@gmail.com',
-        nickname: 'king__doom',
+        username: 'king__doom',
         password: '123456'
     };
     const authMiddleware = jest.fn(
@@ -48,11 +48,11 @@ describe('users route', () => {
             _id: otherUserId,
             email: 'otherEmail@gmail.com'
         });
-        const updatedNickName = 'new nickname';
+        const updatedUsername = 'new username';
         const response = await request(app)
             .put('/user')
             .send({
-                nickname: updatedNickName
+                username: updatedUsername
             } satisfies EditUserRequest['body']);
 
         expect(response.status).toBe(StatusCodes.OK);
@@ -63,19 +63,19 @@ describe('users route', () => {
         const afterUpdateOtherUser = await userModel
             .findById(otherUserId)
             .lean();
-        expect(afterUpdateTestUser?.nickname).toStrictEqual(updatedNickName);
+        expect(afterUpdateTestUser?.username).toStrictEqual(updatedUsername);
         expect(afterUpdateOtherUser).toBeDefined();
-        expect(afterUpdateOtherUser?.nickname).not.toStrictEqual(
-            updatedNickName
+        expect(afterUpdateOtherUser?.username).not.toStrictEqual(
+            updatedUsername
         );
     });
 
     test('edit user with not editable field should edit only the valid fields', async () => {
-        const updatedNickName = 'new nick';
+        const updatedUsername = 'new nick';
         const response = await request(app).put('/user').send({
             email: 'evil@mohaha.smile',
             password: 'evilPassword',
-            nickname: updatedNickName
+            username: updatedUsername
         });
 
         expect(response.status).toBe(StatusCodes.OK);
@@ -83,18 +83,18 @@ describe('users route', () => {
         const afterUpdateTestUser = await userModel
             .findById(testUser._id)
             .lean();
-        expect(afterUpdateTestUser?.nickname).toStrictEqual(updatedNickName);
+        expect(afterUpdateTestUser?.username).toStrictEqual(updatedUsername);
         expect(afterUpdateTestUser?.email).toStrictEqual(testUser.email);
         expect(afterUpdateTestUser?.password).toStrictEqual(testUser.password);
     });
 
     test('edit not existing user should return BAD_REQUEST', async () => {
         await userModel.deleteOne({ _id: testUser._id });
-        const updatedNickName = 'new nick';
+        const updatedUsername = 'new nick';
         const response = await request(app).put('/user').send({
             email: 'evil@mohaha.smile',
             password: 'evilPassword',
-            nickname: updatedNickName
+            username: updatedUsername
         });
 
         expect(response.status).toBe(StatusCodes.BAD_REQUEST);
