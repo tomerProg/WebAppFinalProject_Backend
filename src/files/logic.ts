@@ -1,4 +1,5 @@
 import multer from 'multer';
+import {v4 as uuid} from 'uuid'
 
 const createMulterStorage = (destinationPath: string) =>
     multer.diskStorage({
@@ -11,7 +12,7 @@ const createMulterStorage = (destinationPath: string) =>
                 .filter(Boolean)
                 .slice(1)
                 .join('.');
-            cb(null, Date.now() + '.' + ext);
+            cb(null, uuid() + '.' + ext);
         }
     });
 

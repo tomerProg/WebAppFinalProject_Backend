@@ -14,3 +14,15 @@ export type EditUserRequest = z.infer<typeof editUserRequestZodSchema>;
 export const validateEditUserRequest = validateRequest(
     editUserRequestZodSchema
 );
+
+const getUserRequestZodSchema = authenticatedRequestZodSchema.and(
+    z.object({
+        params: z.object({
+            id: z.string()
+        })
+    })
+);
+export type GetUserRequest = z.infer<typeof getUserRequestZodSchema>;
+export const validateGetUserRequest = validateRequest(
+    getUserRequestZodSchema
+);

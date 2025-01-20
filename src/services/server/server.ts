@@ -2,7 +2,6 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import * as http from 'http';
-import { createFileRouter } from '../../files/router';
 import swaggerUI from 'swagger-ui-express';
 import { createAuthMiddleware } from '../../authentication/middlewares';
 import { createAuthRouter } from '../../authentication/router';
@@ -41,14 +40,20 @@ export class Server extends Service {
     };
 
     useRouters = () => {
-        const { authConfig } = this.config;
+        const { authConfig, profileImagesDestination } = this.config;
         const { database } = this.dependencies;
         const { userModel } = database.getModels();
         const authMiddleware = createAuthMiddleware(authConfig.tokenSecret);
-        
-        this.app.use('/file', createFileRouter({ serverUrl: this.serverUrl }));
+
         this.app.use('/auth', createAuthRouter(authConfig, { userModel }));
-        this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
+        const usersRouterConfig = {
+            serverUrl: this.serverUrl,
+            profileImagesDestination
+        };
+        this.app.use(
+            '/user',
+            createUsersRouter(authMiddleware, usersRouterConfig, { userModel })
+        );
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
