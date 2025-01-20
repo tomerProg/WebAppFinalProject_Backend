@@ -10,6 +10,7 @@ import { z } from 'zod';
  *        required:
  *          - email
  *          - password
+ *          - username
  *        properties:
  *          email:
  *            type: string
@@ -27,6 +28,26 @@ import { z } from 'zod';
  *          email: 'tomercpc01@gmail.com'
  *          password: '123456'
  *          username: king__doom
+ *          profileImage: https://backend/user/image
+ *      UserPublicAttr:
+ *        type: object
+ *        required:
+ *          - email
+ *          - username
+ *        properties:
+ *          email:
+ *            type: string
+ *            description: The user email
+ *          username:
+ *            type: string
+ *            description: the username of the user
+ *          profileImage:
+ *            type: string
+ *            description: path to the user profile image
+ *        example:
+ *          email: 'tomercpc01@gmail.com'
+ *          username: king__doom
+ *          profileImage: https://backend/user/image
  */
 
 export interface User {

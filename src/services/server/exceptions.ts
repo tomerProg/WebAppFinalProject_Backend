@@ -14,6 +14,12 @@ export class BadRequestError extends ServerRequestError {
     }
 }
 
+export class NotFoundError extends ServerRequestError {
+    constructor(message?: string, cause?: Error) {
+        super(StatusCodes.NOT_FOUND, message, cause);
+    }
+}
+
 export class UnauthorizedError extends ServerRequestError {
     constructor(message?: string, cause?: Error) {
         super(StatusCodes.UNAUTHORIZED, message, cause);

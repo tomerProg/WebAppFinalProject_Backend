@@ -15,12 +15,14 @@ import { expressAppRoutesErrorHandler } from './utils';
 export class Server extends Service {
     private app: Express;
     private server: http.Server;
+    private serverUrl: string;
 
     constructor(
         private readonly config: ServerConfig,
         private readonly dependencies: ServerDependencies
     ) {
         super();
+        const { port, domain } = config;
 
         this.app = express();
         this.useMiddlewares();
@@ -28,6 +30,7 @@ export class Server extends Service {
         this.useErrorHandler();
 
         this.server = http.createServer(this.app);
+        this.serverUrl = `http://${domain}:${port}/`;
     }
 
     useMiddlewares = () => {
@@ -37,13 +40,20 @@ export class Server extends Service {
     };
 
     useRouters = () => {
-        const { authConfig } = this.config;
+        const { authConfig, profileImagesDestination } = this.config;
         const { database } = this.dependencies;
         const { userModel } = database.getModels();
         const authMiddleware = createAuthMiddleware(authConfig.tokenSecret);
 
         this.app.use('/auth', createAuthRouter(authConfig, { userModel }));
-        this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
+        const usersRouterConfig = {
+            serverUrl: this.serverUrl,
+            profileImagesDestination
+        };
+        this.app.use(
+            '/user',
+            createUsersRouter(authMiddleware, usersRouterConfig, { userModel })
+        );
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
