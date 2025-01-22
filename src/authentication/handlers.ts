@@ -111,18 +111,23 @@ export const googleLogin =
     ) =>
     async (request: Request, response: Response) => {
         const credential = request.body.credential;
-        const googlePatload = await googleAuthClient.verifyCredential(
+        const googlePayload = await googleAuthClient.verifyCredential(
             credential
         );
         try {
-            const email = googlePatload.email;
+            const email = googlePayload.email;
+            if (!email) {
+                throw new BadRequestError('error missing email');
+            }
+
             const unknownExistUser = await userModel.findOne({ email });
             const user = unknownExistUser
                 ? unknownExistUser
                 : await userModel.create({
                       email: email,
-                      imgUrl: googlePatload.picture,
-                      password: 'google-signin'
+                      profileImage: googlePayload.picture,
+                      password: 'google-login',
+                      username: googlePayload.name ?? email
                   });
             const userId = user._id.toString();
             const tokens = await generateTokens(authConfig, userId);

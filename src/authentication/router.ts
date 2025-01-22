@@ -209,7 +209,7 @@ export const createAuthRouter = (
      *       500:
      *         description: Server error
      */
-    router.post('/google/sign-in', handlers.googleLogin);
+    router.post('/google-login', handlers.googleLogin);
 
     return router;
 };
