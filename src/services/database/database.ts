@@ -1,3 +1,4 @@
+import { postModel } from '../../posts/model';
 import { userModel } from '../../users/model';
 import { Service } from '../service';
 import { DatabaseConfig } from './config';
@@ -7,9 +8,10 @@ export class Database extends Service {
         super();
     }
     
-    getModels = () => {
-        userModel;
-    };
+    getModels = () => ({
+        userModel: userModel,
+        postModel: postModel
+    });
 
     start() {}
 
