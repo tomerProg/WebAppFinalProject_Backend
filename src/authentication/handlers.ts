@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { GoogleAuthClient } from '../googleAuth/google.auth';
 import {
     BadRequestError,
     InternalServerError,
@@ -99,5 +100,38 @@ export const refresh =
             });
         } catch (err) {
             res.status(StatusCodes.BAD_REQUEST).send(err);
+        }
+    };
+
+export const googleLogin =
+    (
+        authConfig: AuthConfig,
+        userModel: UserModel,
+        googleAuthClient: GoogleAuthClient
+    ) =>
+    async (request: Request, response: Response) => {
+        const credential = request.body.credential;
+        const googlePatload = await googleAuthClient.verifyCredential(
+            credential
+        );
+        try {
+            const email = googlePatload.email;
+            const unknownExistUser = await userModel.findOne({ email });
+            const user = unknownExistUser
+                ? unknownExistUser
+                : await userModel.create({
+                      email: email,
+                      imgUrl: googlePatload.picture,
+                      password: 'google-signin'
+                  });
+            const userId = user._id.toString();
+            const tokens = await generateTokens(authConfig, userId);
+
+            response.send({ ...tokens, _id: userId });
+        } catch (err) {
+            throw new BadRequestError(
+                'error missing email or password',
+                err as Error
+            );
         }
     };
