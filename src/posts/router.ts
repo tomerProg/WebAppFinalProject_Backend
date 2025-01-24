@@ -12,7 +12,10 @@ import * as postsController from './controller';
 const buildRouteHandlers = (
     dependencies: PostsRouterDependencies
 ): Record<keyof typeof postsController, RequestHandler> => ({
-    editPost: postsController.editPost(dependencies.postModel)
+    editPost: postsController.editPost(dependencies.postModel),
+    createPost: postsController.createPost(dependencies.postModel),
+    deletePost: postsController.deletePost(dependencies.postModel),
+    getAllPosts: postsController.getAllPosts(dependencies.postModel)
 });
 
 export const createPostsRouter = (
@@ -22,14 +25,17 @@ export const createPostsRouter = (
     const handlers = buildRouteHandlers(...buildHandlersParams);
     const router = Router();
 
+    router.get('/', handlers.getAllPosts)
+    router.post('/', handlers.createPost)
+    
     /**
      * @swagger
-     * /user:
+     * /post:
      *   put:
-     *     summary: Update user attributes
+     *     summary: Update post attributes
      *     description: Update an existing post
      *     tags:
-     *       - User
+     *       - Post
      *     security:
      *       - bearerAuth: []
      *     requestBody:
@@ -39,13 +45,21 @@ export const createPostsRouter = (
      *           schema:
      *             type: object
      *             properties:
-     *               username:
+     *               title:
      *                 type: string
-     *                 description: user new username
-     *                 example: new user username
-     *               profileImage:
+     *                 description: post new title
+     *                 example: new title
+     *               description:  
+     *                  type: string
+     *                  description: post new desctiption
+     *                  example: new description
+     *               suggestion: 
+     *                  type: string
+     *                  description: post new suggestion
+     *                  example: new suggestion
+     *               imageSrc:
      *                 type: string
-     *                 description: path (in server) of new profile image
+     *                 description: path (in server) of a new post image
      *                 example: new/image/path
      *     responses:
      *       200:
@@ -57,7 +71,11 @@ export const createPostsRouter = (
      *       500:
      *         description: Server error
      */
+    
     router.put('/', authMiddleware, handlers.editPost);
+
+    router.delete('/', authMiddleware, handlers.deletePost)
+
 
     return router;
 };

@@ -17,3 +17,26 @@ export const editPost = (postModel: PostModel) =>
         }
         response.sendStatus(StatusCodes.OK);
     });
+
+export const createPost = (postModel: PostModel) =>
+    validateEditPostRequest(async (request, response) => {
+        const createdPost = await postModel.create(request.body);
+
+        if (!createdPost) {
+            throw new BadRequestError('could not create post');
+        }
+        response.sendStatus(StatusCodes.OK).send(createdPost);
+    });
+
+export const deletePost = (postModel: PostModel) =>
+    validateEditPostRequest(async (request, response) => {
+        const { id } = request.user;
+        await postModel.findByIdAndDelete(id);
+        response.sendStatus(StatusCodes.OK);
+    });
+
+export const getAllPosts = (postModel: PostModel) =>
+    validateEditPostRequest(async (request, response) => {
+        const posts = await postModel.find();
+        response.sendStatus(StatusCodes.OK).send(posts);
+    });
