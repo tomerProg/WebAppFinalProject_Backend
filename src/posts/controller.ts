@@ -1,14 +1,23 @@
 import { StatusCodes } from 'http-status-codes';
 import { PostModel } from './model';
 import { validateEditPostRequest } from './validators';
-import { BadRequestError } from '../services/server/exceptions';
+import { BadRequestError, UnauthorizedError } from '../services/server/exceptions';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
-        const { id: postId } = request.user;
-        const { title, description, suggestion, imageSrc } = request.body;
+        const { _id: postId, title, description, suggestion, imageSrc } = request.body;
+        const originalPost = await postModel.findById(postId).lean();
+        if (!originalPost){
+            throw new BadRequestError('post does not exist');
+        }
+
+        const { id: user } = request.user;
+        if (user != originalPost.owner){
+            throw new UnauthorizedError('invalid user');
+        }
+        
         const { modifiedCount } = await postModel.updateOne(
-            { _id: postId },
+            { _id: postId, owner: user },
             { title, description, suggestion, imageSrc }
         );
 

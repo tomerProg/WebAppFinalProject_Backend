@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import request from 'supertest';
-import { createTestingAuthMiddlewareWithPost } from '../../authentication/__tests__/utils';
 import { createDatabaseConfig } from '../../services/database/config';
 import { Database } from '../../services/database/database';
 import { createTestingAppForRouter } from '../../services/server/__tests__/utils';
@@ -9,21 +8,33 @@ import { createTestEnv } from '../../utils/tests';
 import { Post } from '../model';
 import { createPostsRouter } from '../router';
 import { EditPostRequest } from '../validators';
+import { User } from '../../users/model';
+import { createTestingAuthMiddlewareWithUser } from '../../authentication/__tests__/utils';
 
 describe('posts route', () => {
     const env = createTestEnv();
     const database = new Database(createDatabaseConfig(env));
     const { postModel } = database.getModels();
+    
+    const loginUser: User & { _id: Types.ObjectId } = {
+        _id: new Types.ObjectId(),
+        email: 'user@gmail.com',
+        password: 'password',
+        username: 'testUser'
+    }   
+
+
+    const authMiddleware = jest.fn(
+        createTestingAuthMiddlewareWithUser(loginUser)
+    );
 
     const testPost: Post & { _id: Types.ObjectId } = {
         _id: new Types.ObjectId(),
         title: 'Post Title', 
-        owner: 'post owner', 
+        owner: loginUser._id.toString(), 
         description: 'post description'
     };
-    const authMiddleware = jest.fn(
-        createTestingAuthMiddlewareWithPost(testPost)
-    );
+
     const postsRouter = createPostsRouter(authMiddleware, { postModel });
     const app = createTestingAppForRouter('/post', postsRouter);
 
@@ -41,37 +52,33 @@ describe('posts route', () => {
         await postModel.deleteMany();
     });
 
-    test('edit post should not edit other post', async () => {
-        const otherPostId = new Types.ObjectId();
-        await postModel.create({
-            ...testPost,
-            _id: otherPostId,
-            email: 'otherEmail@gmail.com'
-        });
+    test('user cannot edit post of other user', async () => {
+        const otherUserId: string = new Types.ObjectId().toString();
+        const otherPost: Post & { _id: Types.ObjectId } = {
+            _id: new Types.ObjectId(),
+            title: 'Other Title', 
+            owner: otherUserId, 
+            description: 'other description'
+        }; 
+        await postModel.create(otherPost);
+
         const updatedPostTitle = 'new title';
+        
         const response = await request(app)
             .put('/post')
             .send({
-                title: updatedPostTitle
-            } satisfies EditPostRequest['body']);
-
-        expect(response.status).toBe(StatusCodes.OK);
-
-        const afterUpdateTestPost = await postModel
-            .findById(testPost._id)
-            .lean();
-        const afterUpdateOtherPost = await postModel
-            .findById(otherPostId)
-            .lean();
-        expect(afterUpdateTestPost?.title).toStrictEqual(updatedPostTitle);
-        expect(afterUpdateOtherPost).toBeDefined();
-        expect(afterUpdateOtherPost?.title).not.toStrictEqual(updatedPostTitle);
+                _id: otherPost._id.toString(),
+                title: updatedPostTitle,
+            });
+        expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
+        
     });
 
     test('edit post with not editable field should edit only the valid fields', async () => {
         const updatedPostTitle = 'new title';
         const updatedDescription = 'new description'
         const response = await request(app).put('/post').send({
+            ...testPost,
             title: updatedPostTitle, 
             owner: 'thief',
             description: updatedDescription

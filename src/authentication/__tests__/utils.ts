@@ -36,11 +36,11 @@ export const createTestingAuthMiddlewareWithUser =
         next();
     };
 
-export const createTestingAuthMiddlewareWithPost =
-    (post: Post & { _id: Types.ObjectId }) =>
-    (request: Request, _response: Response, next: NextFunction) => {
-        (request as unknown as AuthenticatedRequest).user = {
-            id: post._id.toString()
-        };
-        next();
-    };
+// export const createTestingAuthMiddlewareWithPost =
+//     (post: Post & { _id: Types.ObjectId }) =>
+//     (request: Request, _response: Response, next: NextFunction) => {
+//         (request as unknown as AuthenticatedRequest).user = {
+//             id: post._id.toString()
+//         };
+//         next();
+//     };
