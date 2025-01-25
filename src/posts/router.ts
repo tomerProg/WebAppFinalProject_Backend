@@ -24,8 +24,123 @@ export const createPostsRouter = (
 ) => {
     const handlers = buildRouteHandlers(...buildHandlersParams);
     const router = Router();
+/**
+* @swagger
+* tags:
+*   name: Posts
+*   description: The Posts API
+*/
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Post:
+ *       type: object
+ *       required:
+ *         - title
+ *         - description
+ *         - owner
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: The auto-generated id of the post
+ *         title:
+ *           type: string
+ *           description: The title of the post
+ *         description:
+ *           type: string
+ *           description: The description of the post
+ *         owner:
+ *           type: string
+ *           description: The owner id of the post
+ *         suggestion:
+ *           type: string
+ *           description: The suggestion for the post
+ *         imageSrc:
+ *           type: string
+ *           description: The path (in server) of the post image
+ * 
+ *       example:
+ *         _id: 245234t234234r234r23f4
+ *         title: My First Post
+ *         owner: 324vt23r4tr234t245tbv45by
+ *         description: post description.
+ *         suggestion: post suggestion 
+ *         imageSrc: https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQP5QQKcY4t1-_XAOvt_5Ii9LGJqTDX0B7u5sOZJFeU8QCGJ2jReifGEDftXkScCw-lMm8nmFUYF2QXwMR2KrzTsw
+ */
+
+/**
+ * @swagger
+ * /posts:
+ *   get:
+ *     summary: Get all posts
+ *     description: Retrieve a list of all posts
+ *     tags:
+ *       - Posts
+ *     responses:
+ *       200:
+ *         description: A list of posts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       500:
+ *         description: Server error
+ */
     router.get('/', handlers.getAllPosts)
+
+
+/**
+ * @swagger
+ * /posts:
+ *   post:
+ *     summary: Create a new post
+ *     description: Create a new post
+ *     tags:
+ *       - Posts
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: The title of the post
+ *               description:
+ *                 type: string
+ *                 description: The description of the post
+ *               owner:
+ *                 type: string
+ *                 description: The owner of the post
+ *               suggestion:
+ *                 type: string
+ *                 description: The suggestion of the post
+ *               imageSrc:
+ *                 type: string
+ *                 description: The image source of the post
+ *             required:
+ *               - title
+ *               - content         
+ *               - owner
+ *     responses:
+ *       201:
+ *         description: Post created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Server error
+ */
     router.post('/', handlers.createPost)
     
     /**
