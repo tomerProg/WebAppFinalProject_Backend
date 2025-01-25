@@ -15,7 +15,8 @@ const buildRouteHandlers = (
     editPost: postsController.editPost(dependencies.postModel),
     createPost: postsController.createPost(dependencies.postModel),
     deletePost: postsController.deletePost(dependencies.postModel),
-    getAllPosts: postsController.getAllPosts(dependencies.postModel)
+    getAllPosts: postsController.getAllPosts(dependencies.postModel),
+    getPostById: postsController.getPostById(dependencies.postModel),
 });
 
 export const createPostsRouter = (
@@ -90,9 +91,9 @@ export const createPostsRouter = (
  *       500:
  *         description: Server error
  */
-    router.get('/', handlers.getAllPosts)
+    router.get('/', handlers.getAllPosts)   
 
-
+    router.get("/:id", handlers.getPostById);
 /**
  * @swagger
  * /posts:
