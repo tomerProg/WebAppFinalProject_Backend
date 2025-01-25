@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { PostModel } from './model';
-import { validateCreatePostRequest, validateDeletePostRequest, validateEditPostRequest, validateGetPostRequest } from './validators';
+import { validateCreatePostRequest, validateDeletePostRequest, validateEditPostRequest, validateGetPostByIdRequest, validateGetPostRequest } from './validators';
 import { BadRequestError, UnauthorizedError } from '../services/server/exceptions';
 
 export const editPost = (postModel: PostModel) =>
@@ -70,3 +70,12 @@ export const getAllPosts = (postModel: PostModel) =>
         });
         response.sendStatus(StatusCodes.OK).send(posts);
     });
+
+export const getPostById = (postModel: PostModel) =>
+    validateGetPostByIdRequest(async (request, response) => {
+        const id = request.params.id;
+        
+        const post = await postModel.findById(id);
+        response.sendStatus(StatusCodes.OK).send(post);
+    });
+    

@@ -60,3 +60,15 @@ export type GetPostRequest = z.infer<typeof  getPostRequestZodSchema>;
 export const validateGetPostRequest = validateRequest(
     getPostRequestZodSchema
 );
+
+const getPostByIdRequestZodSchema = authenticatedRequestZodSchema.and(
+    z.object({
+        params: z.object({
+            id: z.string()
+        })
+    })
+);
+export type GetPostByIdRequest = z.infer<typeof  getPostByIdRequestZodSchema>;
+export const validateGetPostByIdRequest = validateRequest(
+    getPostByIdRequestZodSchema
+);
