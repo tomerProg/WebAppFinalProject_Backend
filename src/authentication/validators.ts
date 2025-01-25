@@ -8,3 +8,17 @@ const requestWithUserBodyZodSchema = z.object({
 export const validateRequestWithUserInBody = validateRequest(
     requestWithUserBodyZodSchema
 );
+
+const refreshTokenRequestZodSchema = z.object({
+    body: z.object({ refreshToken: z.string() })
+});
+export const validateRefreshTokenRequest = validateRequest(
+    refreshTokenRequestZodSchema
+);
+
+const googleLoginRequestZodSchema = z.object({
+    body: z.object({ credential: z.string() })
+});
+export const validateGoogleLoginRequest = validateRequest(
+    googleLoginRequestZodSchema
+);

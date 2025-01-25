@@ -38,11 +38,11 @@ export class Server extends Service {
 
     useRouters = () => {
         const { authConfig } = this.config;
-        const { database } = this.dependencies;
+        const { database, googleAuthClient } = this.dependencies;
         const { userModel } = database.getModels();
         const authMiddleware = createAuthMiddleware(authConfig.tokenSecret);
 
-        this.app.use('/auth', createAuthRouter(authConfig, { userModel }));
+        this.app.use('/auth', createAuthRouter(authConfig, { userModel, googleAuthClient }));
         this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
