@@ -10,7 +10,11 @@ import {
 import { UserModel } from '../users/model';
 import { AuthConfig } from './config';
 import { generateTokens, hashPassword, verifyRefreshToken } from './utils';
-import { validateRequestWithUserInBody } from './validators';
+import {
+    validateGoogleLoginRequest,
+    validateRefreshTokenRequest,
+    validateRequestWithUserInBody
+} from './validators';
 
 export const register = (userModel: UserModel) =>
     validateRequestWithUserInBody(async (request, response) => {
@@ -74,18 +78,18 @@ export const logout =
         }
     };
 
-export const refresh =
-    (authConfig: AuthConfig) => async (req: Request, res: Response) => {
+export const refresh = (authConfig: AuthConfig) =>
+    validateRefreshTokenRequest(async (request, response) => {
+        const { refreshToken } = request.body;
+        const { tokenSecret } = authConfig;
+
         try {
-            const user = await verifyRefreshToken(
-                authConfig.tokenSecret,
-                req.body.refreshToken
-            );
+            const user = await verifyRefreshToken(tokenSecret, refreshToken);
             const userId = user._id.toString();
             const tokens = generateTokens(authConfig, userId);
 
             if (!tokens) {
-                res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+                response.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
                 return;
             }
             if (!user.refreshToken) {
@@ -93,24 +97,23 @@ export const refresh =
             }
             user.refreshToken.push(tokens.refreshToken);
             await user.save();
-            res.send({
+            response.send({
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
                 _id: userId
             });
         } catch (err) {
-            res.status(StatusCodes.BAD_REQUEST).send(err);
+            response.status(StatusCodes.BAD_REQUEST).send(err);
         }
-    };
+    });
 
-export const googleLogin =
-    (
-        authConfig: AuthConfig,
-        userModel: UserModel,
-        googleAuthClient: GoogleAuthClient
-    ) =>
-    async (request: Request, response: Response) => {
-        const credential = request.body.credential;
+export const googleLogin = (
+    authConfig: AuthConfig,
+    userModel: UserModel,
+    googleAuthClient: GoogleAuthClient
+) =>
+    validateGoogleLoginRequest(async (request, response) => {
+        const { credential } = request.body;
         const googlePayload = await googleAuthClient.verifyCredential(
             credential
         );
@@ -139,4 +142,4 @@ export const googleLogin =
                 err as Error
             );
         }
-    };
+    });
