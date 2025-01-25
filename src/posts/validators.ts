@@ -13,9 +13,50 @@ const editPostRequestZodSchema = authenticatedRequestZodSchema.and(
         })
     })
 );
-
 export type EditPostRequest = z.infer<typeof  editPostRequestZodSchema>;
 export const validateEditPostRequest = validateRequest(
     editPostRequestZodSchema
 );
 
+const createPostRequestZodSchema = authenticatedRequestZodSchema.and(
+    z.object({
+        body: z.object({
+            _id: z.string(),
+            title: z.string(),
+            description: z.string(),
+            suggestion: z.string().optional(),
+            imageSrc: z.string().optional()
+        })
+    })
+);
+export type CreatePostRequest = z.infer<typeof  createPostRequestZodSchema>;
+export const validateCreatePostRequest = validateRequest(
+    createPostRequestZodSchema
+);
+
+const deletePostRequestZodSchema = authenticatedRequestZodSchema.and(
+    z.object({
+        body: z.object({
+            _id: z.string(),
+        })
+    })
+);
+export type DeletePostRequest = z.infer<typeof  deletePostRequestZodSchema>;
+export const validateDeletePostRequest = validateRequest(
+    deletePostRequestZodSchema
+);
+
+
+const getPostRequestZodSchema = authenticatedRequestZodSchema.and(
+    z.object({
+        body: z.object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            owner: z.string().optional(),
+        })
+    })
+);
+export type GetPostRequest = z.infer<typeof  getPostRequestZodSchema>;
+export const validateGetPostRequest = validateRequest(
+    getPostRequestZodSchema
+);

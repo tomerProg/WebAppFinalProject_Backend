@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { PostModel } from './model';
-import { validateEditPostRequest } from './validators';
+import { validateCreatePostRequest, validateDeletePostRequest, validateEditPostRequest, validateGetPostRequest } from './validators';
 import { BadRequestError, UnauthorizedError } from '../services/server/exceptions';
 
 export const editPost = (postModel: PostModel) =>
@@ -28,8 +28,13 @@ export const editPost = (postModel: PostModel) =>
     });
 
 export const createPost = (postModel: PostModel) =>
-    validateEditPostRequest(async (request, response) => {
-        const createdPost = await postModel.create(request.body);
+    validateCreatePostRequest(async (request, response) => {
+        const { id: user } = request.user;
+
+        const createdPost = await postModel.create({
+            ...request.body,
+            owner: user
+        });
 
         if (!createdPost) {
             throw new BadRequestError('could not create post');
@@ -38,14 +43,30 @@ export const createPost = (postModel: PostModel) =>
     });
 
 export const deletePost = (postModel: PostModel) =>
-    validateEditPostRequest(async (request, response) => {
-        const { id } = request.user;
-        await postModel.findByIdAndDelete(id);
+    validateDeletePostRequest(async (request, response) => {
+        const { _id: postId } = request.body;
+        const originalPost = await postModel.findById(postId).lean();
+        if (!originalPost){
+            throw new BadRequestError('post does not exist');
+        }
+        
+        const { id: user } = request.user;
+        if (user != originalPost.owner){
+            throw new UnauthorizedError('invalid user');
+        }
+        
+        await postModel.findByIdAndDelete(postId);
         response.sendStatus(StatusCodes.OK);
     });
 
 export const getAllPosts = (postModel: PostModel) =>
-    validateEditPostRequest(async (request, response) => {
-        const posts = await postModel.find();
+    validateGetPostRequest(async (request, response) => {
+        const filter = request.body;
+        
+        const posts = await postModel.find({
+            title: { $regex: filter?.title, $options: 'i' },
+            description: { $regex: filter?.description, $options: 'i' },
+            owner: filter?.owner
+        });
         response.sendStatus(StatusCodes.OK).send(posts);
     });

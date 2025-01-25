@@ -20,9 +20,6 @@ export class Database extends Service {
     });
 
     async start() {
-        if (!this.config.connection) {
-            throw new Error('missing config DB_CONNECT');
-        }
         await mongoose.connect(this.config.connection);
     }
 
