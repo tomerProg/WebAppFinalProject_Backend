@@ -19,11 +19,14 @@ export class Database extends Service {
         postModel: postModel
     });
 
-    start() {
-        mongoose.connect(this.config.connection);
+    async start() {
+        if (!this.config.connection) {
+            throw new Error('missing config DB_CONNECT');
+        }
+        await mongoose.connect(this.config.connection);
     }
 
-    stop() {
-        mongoose.disconnect();
+    async stop() {
+        await mongoose.disconnect();
     }
 }
