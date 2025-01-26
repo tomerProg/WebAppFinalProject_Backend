@@ -30,7 +30,7 @@ export const editPost = (postModel: PostModel) =>
 export const createPost = (postModel: PostModel) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
-
+        const {title, description, suggestion, imageSrc} = request.body; 
         const createdPost = await postModel.create({
             ...request.body,
             owner: user
@@ -39,7 +39,8 @@ export const createPost = (postModel: PostModel) =>
         if (!createdPost) {
             throw new BadRequestError('could not create post');
         }
-        response.sendStatus(StatusCodes.OK).send(createdPost);       
+        response.sendStatus(StatusCodes.OK).send(createdPost);
+        //response.sendStatus(StatusCodes.OK)       
     });
 
 export const deletePost = (postModel: PostModel) =>

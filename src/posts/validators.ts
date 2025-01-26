@@ -21,7 +21,7 @@ export const validateEditPostRequest = validateRequest(
 const createPostRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         body: z.object({
-            _id: z.string(),
+            _id: z.string().optional(),
             title: z.string(),
             description: z.string(),
             suggestion: z.string().optional(),

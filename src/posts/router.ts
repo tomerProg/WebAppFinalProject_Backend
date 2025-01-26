@@ -73,7 +73,7 @@ export const createPostsRouter = (
 
 /**
  * @swagger
- * /posts:
+ * /post:
  *   get:
  *     summary: Get all posts
  *     description: Retrieve a list of all posts
@@ -91,12 +91,12 @@ export const createPostsRouter = (
  *       500:
  *         description: Server error
  */
-    router.get('/', handlers.getAllPosts)   
+    router.get('/', authMiddleware, handlers.getAllPosts)   
 
 
 /**
  * @swagger
- * /posts/{id}:
+ * /post/{id}:
  *   get:
  *     summary: Get a post by ID
  *     description: Retrieve a single post by its ID
@@ -121,10 +121,10 @@ export const createPostsRouter = (
  *       500:
  *         description: Server error
  */
-    router.get("/:id", handlers.getPostById);
+    router.get("/:id", authMiddleware, handlers.getPostById);
 /**
  * @swagger
- * /posts:
+ * /post:
  *   post:
  *     summary: Create a new post
  *     description: Create a new post
@@ -170,7 +170,7 @@ export const createPostsRouter = (
  *       500:
  *         description: Server error
  */
-    router.post('/', handlers.createPost)
+    router.post('/', authMiddleware, handlers.createPost)
     
 /**
  * @swagger
@@ -250,7 +250,6 @@ export const createPostsRouter = (
  *         description: Server error
  */
     router.delete('/', authMiddleware, handlers.deletePost)
-
 
     return router;
 };

@@ -46,7 +46,7 @@ export class Server extends Service {
 
         this.app.use('/auth', createAuthRouter(authConfig, { userModel }));
         this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
-        this.app.use('/posts', createPostsRouter(authMiddleware, { postModel }));
+        this.app.use('/post', createPostsRouter(authMiddleware, { postModel }));
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
