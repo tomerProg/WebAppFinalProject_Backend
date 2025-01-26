@@ -39,7 +39,7 @@ export const createPost = (postModel: PostModel) =>
         if (!createdPost) {
             throw new BadRequestError('could not create post');
         }
-        response.sendStatus(StatusCodes.OK).send(createdPost);
+        response.sendStatus(StatusCodes.OK).send(createdPost);       
     });
 
 export const deletePost = (postModel: PostModel) =>

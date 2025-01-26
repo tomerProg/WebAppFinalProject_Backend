@@ -93,6 +93,34 @@ export const createPostsRouter = (
  */
     router.get('/', handlers.getAllPosts)   
 
+
+/**
+ * @swagger
+ * /posts/{id}:
+ *   get:
+ *     summary: Get a post by ID
+ *     description: Retrieve a single post by its ID
+ *     tags:
+ *       - Posts
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the post
+ *     responses:
+ *       200:
+ *         description: A single post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post not found
+ *       500:
+ *         description: Server error
+ */
     router.get("/:id", handlers.getPostById);
 /**
  * @swagger
@@ -144,52 +172,83 @@ export const createPostsRouter = (
  */
     router.post('/', handlers.createPost)
     
-    /**
-     * @swagger
-     * /post:
-     *   put:
-     *     summary: Update post attributes
-     *     description: Update an existing post
-     *     tags:
-     *       - Post
-     *     security:
-     *       - bearerAuth: []
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               title:
-     *                 type: string
-     *                 description: post new title
-     *                 example: new title
-     *               description:  
-     *                  type: string
-     *                  description: post new desctiption
-     *                  example: new description
-     *               suggestion: 
-     *                  type: string
-     *                  description: post new suggestion
-     *                  example: new suggestion
-     *               imageSrc:
-     *                 type: string
-     *                 description: path (in server) of a new post image
-     *                 example: new/image/path
-     *     responses:
-     *       200:
-     *         description: post updated successfully
-     *       400:
-     *         description: Invalid input
-     *       404:
-     *         description: post not found
-     *       500:
-     *         description: Server error
-     */
+/**
+ * @swagger
+ * /post:
+ *   put:
+ *     summary: Update post attributes
+ *     description: Update an existing post
+ *     tags:
+ *       - Post
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: post new title
+ *                 example: new title
+ *               description:  
+ *                  type: string
+ *                  description: post new desctiption
+ *                  example: new description
+ *               suggestion: 
+ *                  type: string
+ *                  description: post new suggestion
+ *                  example: new suggestion
+ *               imageSrc:
+ *                 type: string
+ *                 description: path (in server) of a new post image
+ *                 example: new/image/path
+ *     responses:
+ *       200:
+ *         description: post updated successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: post not found
+ *       500:
+ *         description: Server error
+ */
     
     router.put('/', authMiddleware, handlers.editPost);
 
+/**
+ * @swagger
+ * /post:
+ *   delete:
+ *     summary: Delete post 
+ *     description: Delete an existing post
+ *     tags:
+ *       - Post
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               _id:
+ *                 type: string
+ *                 description: post id to delete
+ *                 example: 
+ *     responses:
+ *       200:
+ *         description: post deleted successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: post not found
+ *       500:
+ *         description: Server error
+ */
     router.delete('/', authMiddleware, handlers.deletePost)
 
 
