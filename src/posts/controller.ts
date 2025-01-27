@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { PostModel } from './model';
 import { validateCreatePostRequest, validateDeletePostRequest, validateEditPostRequest, validateGetPostByIdRequest, validateGetPostRequest } from './validators';
 import { BadRequestError, UnauthorizedError } from '../services/server/exceptions';
+import { buildPostFilter } from './utils';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
@@ -63,13 +64,8 @@ export const deletePost = (postModel: PostModel) =>
 export const getAllPosts = (postModel: PostModel) =>
     validateGetPostRequest(async (request, response) => {
         const filter = request.body;
-        
-        const posts = await postModel.find({
-            title: { $regex: filter?.title, $options: 'i' },
-            description: { $regex: filter?.description, $options: 'i' },
-            owner: filter?.owner
-        });
-        response.sendStatus(StatusCodes.OK).send(posts);
+        const posts = await postModel.find(filter ? buildPostFilter(filter) : {})
+        response.send(posts);
     });
 
 export const getPostById = (postModel: PostModel) =>

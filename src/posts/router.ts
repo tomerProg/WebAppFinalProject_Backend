@@ -5,8 +5,8 @@ import * as postsController from './controller';
 /**
  * @swagger
  * tags:
- *   name: User
- *   description: API for /user
+ *   name: Post
+ *   description: API for /post
  */
 
 const buildRouteHandlers = (
@@ -28,8 +28,8 @@ export const createPostsRouter = (
 /**
 * @swagger
 * tags:
-*   name: Posts
-*   description: The Posts API
+*   name: Post
+*   description: The Post API
 */
 
 /**
@@ -78,7 +78,7 @@ export const createPostsRouter = (
  *     summary: Get all posts
  *     description: Retrieve a list of all posts
  *     tags:
- *       - Posts
+ *       - Post
  *     responses:
  *       200:
  *         description: A list of posts
@@ -93,7 +93,6 @@ export const createPostsRouter = (
  */
     router.get('/', authMiddleware, handlers.getAllPosts)   
 
-
 /**
  * @swagger
  * /post/{id}:
@@ -101,7 +100,7 @@ export const createPostsRouter = (
  *     summary: Get a post by ID
  *     description: Retrieve a single post by its ID
  *     tags:
- *       - Posts
+ *       - Post
  *     parameters:
  *       - in: path
  *         name: id
@@ -122,14 +121,15 @@ export const createPostsRouter = (
  *         description: Server error
  */
     router.get("/:id", authMiddleware, handlers.getPostById);
-/**
+   
+    /**
  * @swagger
  * /post:
  *   post:
  *     summary: Create a new post
  *     description: Create a new post
  *     tags:
- *       - Posts
+ *       - Post
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -171,7 +171,6 @@ export const createPostsRouter = (
  *         description: Server error
  */
     router.post('/', authMiddleware, handlers.createPost)
-    
 /**
  * @swagger
  * /post:
@@ -189,6 +188,9 @@ export const createPostsRouter = (
  *           schema:
  *             type: object
  *             properties:
+ *               _id:
+ *                 type: string
+ *                 description: post id to update
  *               title:
  *                 type: string
  *                 description: post new title
@@ -214,8 +216,7 @@ export const createPostsRouter = (
  *         description: post not found
  *       500:
  *         description: Server error
- */
-    
+ */    
     router.put('/', authMiddleware, handlers.editPost);
 
 /**
