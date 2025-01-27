@@ -2,7 +2,7 @@ import { Express, NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import request from 'supertest';
-import { User, UserModel } from '../../users/model';
+import { User } from '../../users/model';
 import { AuthenticatedRequest } from '../types';
 
 export const createUserAuthenticationToken = async (

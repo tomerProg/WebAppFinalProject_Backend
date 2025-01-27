@@ -26,6 +26,12 @@ export class UnauthorizedError extends ServerRequestError {
     }
 }
 
+export class ForbiddenError extends ServerRequestError {
+    constructor(message?: string, cause?: Error) {
+        super(StatusCodes.FORBIDDEN, message, cause);
+    }
+}
+
 export class InternalServerError extends ServerRequestError {
     constructor(message?: string, cause?: Error) {
         super(StatusCodes.INTERNAL_SERVER_ERROR, message, cause);

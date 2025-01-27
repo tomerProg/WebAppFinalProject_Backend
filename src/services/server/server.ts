@@ -11,6 +11,8 @@ import { Service } from '../service';
 import { ServerConfig } from './config';
 import { ServerDependencies } from './dependencies';
 import { expressAppRoutesErrorHandler } from './utils';
+import { createPostsRouter } from '../../posts/router';
+import { postModel } from '../../posts/model';
 
 export class Server extends Service {
     private app: Express;
@@ -54,6 +56,7 @@ export class Server extends Service {
             '/user',
             createUsersRouter(authMiddleware, usersRouterConfig, { userModel })
         );
+        this.app.use('/post', createPostsRouter(authMiddleware, { postModel }));
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
