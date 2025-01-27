@@ -166,142 +166,135 @@ describe('posts route', () => {
         });
     })
 
-    // describe('edit post', () =>{
-    //     test('user cannot edit post of other user', async () => {
-    //         const otherUserId: string = new Types.ObjectId().toString();
-    //         const otherPost: Post & { _id: Types.ObjectId } = {
-    //             _id: new Types.ObjectId(),
-    //             title: 'Other Title', 
-    //             owner: otherUserId, 
-    //             description: 'other description'
-    //         }; 
-    //         await postModel.create(otherPost);
+    describe('edit post', () =>{
+        test('user cannot edit post of other user', async () => {
+            const otherUserId: string = new Types.ObjectId().toString();
+            const otherPost: Post & { _id: Types.ObjectId } = {
+                _id: new Types.ObjectId(),
+                title: 'Other Title', 
+                owner: otherUserId, 
+                description: 'other description'
+            }; 
+            await postModel.create(otherPost);
     
-    //         const updatedPostTitle = 'new title';
+            const updatedPostTitle = 'new title';
             
-    //         const response = await request(app)
-    //             .put('/post')
-    //             .send({
-    //                 _id: otherPost._id.toString(),
-    //                 title: updatedPostTitle,
-    //             });
-    //         expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
+            const response = await request(app)
+                .put(`/post/${otherPost._id}`)
+                .send({
+                    title: updatedPostTitle,
+                });
+            expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
             
-    //     });
+        });
     
-    //     test('edit post with not editable field should edit only the valid fields', async () => {
-    //         const updatedPostTitle = 'new title';
-    //         const updatedDescription = 'new description'
-    //         const response = await request(app).put('/post').send({
-    //             ...testPost,
-    //             title: updatedPostTitle, 
-    //             owner: 'thief',
-    //             description: updatedDescription
-    //         });
+        test('edit post with not editable field should edit only the valid fields', async () => {
+            const updatedPostTitle = 'new title';
+            const updatedDescription = 'new description'
+            const response = await request(app).put(`/post/${testPost._id}`).send({
+                ...testPost,
+                title: updatedPostTitle, 
+                owner: 'thief',
+                description: updatedDescription
+            });
     
-    //         expect(response.status).toBe(StatusCodes.OK);
+            expect(response.status).toBe(StatusCodes.OK);
     
-    //         const afterUpdateTestUser = await postModel.findById(testPost._id).lean();
+            const afterUpdateTestUser = await postModel.findById(testPost._id).lean();
     
-    //         expect(afterUpdateTestUser?.title).toStrictEqual(updatedPostTitle);
-    //         expect(afterUpdateTestUser?.owner).toStrictEqual(testPost.owner);
-    //         expect(afterUpdateTestUser?.description).toStrictEqual(updatedDescription);
-    //     });
+            expect(afterUpdateTestUser?.title).toStrictEqual(updatedPostTitle);
+            expect(afterUpdateTestUser?.owner).toStrictEqual(testPost.owner);
+            expect(afterUpdateTestUser?.description).toStrictEqual(updatedDescription);
+        });
     
-    //     test('edit not existing post should return BAD_REQUEST', async () => {
-    //         await postModel.deleteOne({ _id: testPost._id });
-    //         const updatedPostTitle = 'new title';
-    //         const response = await request(app).put('/post').send({
-    //             title: updatedPostTitle, 
-    //             owner: testPost.owner,
-    //             description: testPost.description 
-    //         });
+        test('edit not existing post should return BAD_REQUEST', async () => {
+            await postModel.deleteOne({ _id: testPost._id });
+            const updatedPostTitle = 'new title';
+            const response = await request(app).put(`/post/${testPost._id}`).send({
+                title: updatedPostTitle, 
+                owner: testPost.owner,
+                description: testPost.description 
+            });
     
-    //         expect(response.status).toBe(StatusCodes.BAD_REQUEST);
-    //     });    
-    // })
+            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });    
+    })
 
-    // describe('create post', () =>{
-    //     test('user creates a post', async () => { 
-    //         await postModel.deleteOne({ _id: testPost._id });
+    describe('create post', () =>{
+        test('user creates a post', async () => { 
+            await postModel.deleteOne({ _id: testPost._id });
             
-    //         const response = await request(app)
-    //         .post('/post').send({...testPost})
+            const response = await request(app)
+            .post('/post').send({...testPost})
     
-    //         const createdPost = await postModel.findById(testPost._id).lean();
+            const createdPost = await postModel.findById(testPost._id).lean();
     
-    //         expect(response.status).toBe(StatusCodes.OK);
-    //         expect(createdPost).not.toBeNull();
-    //         expect(createdPost?.owner).toStrictEqual(loginUser._id.toString())
-    //     });
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(createdPost).not.toBeNull();
+            expect(createdPost?.owner).toStrictEqual(loginUser._id.toString())
+        });
     
-    //     test('enforce the user who created the post to be the owner of the post', async () => {
-    //         await postModel.deleteOne({ _id: testPost._id });
-    //         const otherUserId: string = new Types.ObjectId().toString();
+        test('enforce the user who created the post to be the owner of the post', async () => {
+            await postModel.deleteOne({ _id: testPost._id });
+            const otherUserId: string = new Types.ObjectId().toString();
              
-    //         const response = await request(app).post('/post').send({
-    //             ...testPost,
-    //             owner: otherUserId
-    //         })
+            const response = await request(app).post('/post').send({
+                ...testPost,
+                owner: otherUserId
+            })
     
-    //         const createdPost = await postModel.findById(testPost._id).lean();
+            const createdPost = await postModel.findById(testPost._id).lean();
     
-    //         expect(response.status).toBe(StatusCodes.OK);
-    //         expect(createdPost).not.toBeNull();
-    //         expect(createdPost?.owner).toStrictEqual(loginUser._id.toString())
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(createdPost).not.toBeNull();
+            expect(createdPost?.owner).toStrictEqual(loginUser._id.toString())
     
-    //     });
+        });
     
-    //     test('user cannot create post without required fields', async () => {
-    //         await postModel.deleteOne({ _id: testPost._id });
+        test('user cannot create post without required fields', async () => {
+            await postModel.deleteOne({ _id: testPost._id });
     
-    //         const response = await request(app)
-    //         .post('/post').send({
-    //             title: testPost.title            
-    //         })
+            const response = await request(app)
+            .post('/post').send({
+                title: testPost.title            
+            })
     
-    //         expect(response.status).toBe(StatusCodes.BAD_REQUEST);
-    //     });    
-    // })
+            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });    
+    })
 
-    // describe('delete post', () => {
-    //     test('user deletes a post', async () => {
-    //         const response = await request(app).delete('/post')
-    //         .send({_id: testPost._id});
+    describe('delete post', () => {
+        test('user deletes a post', async () => {
+            const response = await request(app).delete(`/post/${testPost._id}`)
     
-    //         const deletedPost = await postModel.findById(testPost._id).lean();
+            const deletedPost = await postModel.findById(testPost._id).lean();
     
-    //         expect(response.status).toBe(StatusCodes.OK);
-    //         expect(deletedPost).toBeNull();
-    //     });
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(deletedPost).toBeNull();
+        });
     
-    //     test('user cannot delete other post', async () => {
-    //         const otherUserId: string = new Types.ObjectId().toString();
-    //         const otherPost: Post & { _id: Types.ObjectId } = {
-    //             _id: new Types.ObjectId(),
-    //             title: 'Other Title', 
-    //             owner: otherUserId, 
-    //             description: 'other description'
-    //         }; 
-    //         await postModel.create(otherPost);
+        test('user cannot delete other post', async () => {
+            const otherUserId: string = new Types.ObjectId().toString();
+            const otherPost: Post & { _id: Types.ObjectId } = {
+                _id: new Types.ObjectId(),
+                title: 'Other Title', 
+                owner: otherUserId, 
+                description: 'other description'
+            }; 
+            await postModel.create(otherPost);
     
-    //         const response = await request(app)
-    //         .delete('/post').send({
-    //             _id: otherPost._id       
-    //         })
+            const response = await request(app).delete(`/post/${otherPost._id}`)
     
-    //         expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
-    //     });
+            expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
+        });
     
-    //     test('user cannot delete a post that does not exist', async () => {
-    //         await postModel.deleteOne({ _id: testPost._id });
+        test('user cannot delete a post that does not exist', async () => {
+            await postModel.deleteOne({ _id: testPost._id });
     
-    //         const response = await request(app)
-    //         .delete('/post').send({
-    //             _id: testPost._id       
-    //         })
+            const response = await request(app)
+            .delete(`/post/${testPost._id}`);
     
-    //         expect(response.status).toBe(StatusCodes.BAD_REQUEST);
-    //     });    
-    // }) 
+            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });    
+    }) 
 });

@@ -6,7 +6,8 @@ import { buildPostFilter } from './utils';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
-        const { _id: postId, title, description, suggestion, imageSrc } = request.body;
+        const {id: postId} = request.params;
+        const { title, description, suggestion, imageSrc } = request.body;
         const originalPost = await postModel.findById(postId).lean();
         if (!originalPost){
             throw new BadRequestError('post does not exist');
@@ -46,7 +47,7 @@ export const createPost = (postModel: PostModel) =>
 
 export const deletePost = (postModel: PostModel) =>
     validateDeletePostRequest(async (request, response) => {
-        const { _id: postId } = request.body;
+        const postId = request.params.id;
         const originalPost = await postModel.findById(postId).lean();
         if (!originalPost){
             throw new BadRequestError('post does not exist');

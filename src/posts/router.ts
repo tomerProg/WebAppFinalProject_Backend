@@ -79,6 +79,8 @@ export const createPostsRouter = (
  *     description: Retrieve a list of all posts
  *     tags:
  *       - Post
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of posts
@@ -101,6 +103,8 @@ export const createPostsRouter = (
  *     description: Retrieve a single post by its ID
  *     tags:
  *       - Post
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -132,8 +136,6 @@ export const createPostsRouter = (
  *       - Post
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -173,7 +175,7 @@ export const createPostsRouter = (
     router.post('/', authMiddleware, handlers.createPost)
 /**
  * @swagger
- * /post:
+ * /post/{id}:
  *   put:
  *     summary: Update post attributes
  *     description: Update an existing post
@@ -181,6 +183,13 @@ export const createPostsRouter = (
  *       - Post
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the updated post  
  *     requestBody:
  *       required: true
  *       content:
@@ -188,22 +197,19 @@ export const createPostsRouter = (
  *           schema:
  *             type: object
  *             properties:
- *               _id:
- *                 type: string
- *                 description: post id to update
- *               title:
+ *              title:
  *                 type: string
  *                 description: post new title
  *                 example: new title
- *               description:  
+ *              description:  
  *                  type: string
  *                  description: post new desctiption
  *                  example: new description
- *               suggestion: 
+ *              suggestion: 
  *                  type: string
  *                  description: post new suggestion
  *                  example: new suggestion
- *               imageSrc:
+ *              imageSrc:
  *                 type: string
  *                 description: path (in server) of a new post image
  *                 example: new/image/path
@@ -217,11 +223,11 @@ export const createPostsRouter = (
  *       500:
  *         description: Server error
  */    
-    router.put('/', authMiddleware, handlers.editPost);
+    router.put('/:id', authMiddleware, handlers.editPost);
 
 /**
  * @swagger
- * /post:
+ * /post/{id}:
  *   delete:
  *     summary: Delete post 
  *     description: Delete an existing post
@@ -229,17 +235,13 @@ export const createPostsRouter = (
  *       - Post
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               _id:
- *                 type: string
- *                 description: post id to delete
- *                 example: 
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the deleted post
  *     responses:
  *       200:
  *         description: post deleted successfully
@@ -250,7 +252,7 @@ export const createPostsRouter = (
  *       500:
  *         description: Server error
  */
-    router.delete('/', authMiddleware, handlers.deletePost)
+    router.delete('/:id', authMiddleware, handlers.deletePost)
 
     return router;
 };
