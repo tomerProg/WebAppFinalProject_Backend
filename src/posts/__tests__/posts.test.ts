@@ -152,6 +152,18 @@ describe('posts route', () => {
             expect(response.body[0].suggestion).toBe(otherPost.suggestion);
             expect(response.body[0].imageSrc).toBe(otherPost.imageSrc);
         });
+        test('user can search a post by its id', async () => {
+            const response = await request(app).get(`/post/${testPost._id}`);
+
+            expect(response.status).toBe(StatusCodes.OK);
+            
+            expect(response.body._id).toBe(testPost._id.toString());
+            expect(response.body.owner).toBe(testPost.owner);
+            expect(response.body.description).toBe(testPost.description);
+            expect(response.body.title).toBe(testPost.title);
+            expect(response.body.suggestion).toBe(testPost.suggestion);
+            expect(response.body.imageSrc).toBe(testPost.imageSrc);
+        });
     })
 
     // describe('edit post', () =>{

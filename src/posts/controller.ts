@@ -72,7 +72,7 @@ export const getPostById = (postModel: PostModel) =>
     validateGetPostByIdRequest(async (request, response) => {
         const id = request.params.id;
         
-        const post = await postModel.findById(id);
-        response.sendStatus(StatusCodes.OK).send(post);
+        const post = await postModel.findById(id).lean();
+        response.send(post);
     });
     
