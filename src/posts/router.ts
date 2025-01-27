@@ -126,7 +126,7 @@ export const createPostsRouter = (
  */
     router.get("/:id", authMiddleware, handlers.getPostById);
    
-    /**
+/**
  * @swagger
  * /post:
  *   post:
@@ -136,6 +136,8 @@ export const createPostsRouter = (
  *       - Post
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -147,9 +149,6 @@ export const createPostsRouter = (
  *               description:
  *                 type: string
  *                 description: The description of the post
- *               owner:
- *                 type: string
- *                 description: The owner of the post
  *               suggestion:
  *                 type: string
  *                 description: The suggestion of the post
@@ -158,8 +157,7 @@ export const createPostsRouter = (
  *                 description: The image source of the post
  *             required:
  *               - title
- *               - content         
- *               - owner
+ *               - description
  *     responses:
  *       201:
  *         description: Post created successfully
