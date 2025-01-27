@@ -1,23 +1,29 @@
 import { StatusCodes } from 'http-status-codes';
+import { BadRequestError, ForbiddenError } from '../services/server/exceptions';
 import { PostModel } from './model';
-import { validateCreatePostRequest, validateDeletePostRequest, validateEditPostRequest, validateGetPostByIdRequest, validateGetPostRequest } from './validators';
-import { BadRequestError, UnauthorizedError } from '../services/server/exceptions';
 import { buildPostFilter } from './utils';
+import {
+    validateCreatePostRequest,
+    validateDeletePostRequest,
+    validateEditPostRequest,
+    validateGetPostByIdRequest,
+    validateGetPostRequest
+} from './validators';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
-        const {id: postId} = request.params;
+        const { id: postId } = request.params;
         const { title, description, suggestion, imageSrc } = request.body;
         const originalPost = await postModel.findById(postId).lean();
-        if (!originalPost){
+        if (!originalPost) {
             throw new BadRequestError('post does not exist');
         }
 
         const { id: user } = request.user;
-        if (user != originalPost.owner){
-            throw new UnauthorizedError('invalid user');
+        if (user != originalPost.owner) {
+            throw new ForbiddenError('invalid user');
         }
-        
+
         const { modifiedCount } = await postModel.updateOne(
             { _id: postId, owner: user },
             { title, description, suggestion, imageSrc }
@@ -32,7 +38,6 @@ export const editPost = (postModel: PostModel) =>
 export const createPost = (postModel: PostModel) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
-        const {title, description, suggestion, imageSrc} = request.body; 
         const createdPost = await postModel.create({
             ...request.body,
             owner: user
@@ -41,23 +46,22 @@ export const createPost = (postModel: PostModel) =>
         if (!createdPost) {
             throw new BadRequestError('could not create post');
         }
-        response.sendStatus(StatusCodes.OK).send(createdPost);
-        //response.sendStatus(StatusCodes.OK)       
+        response.status(StatusCodes.OK).send(createdPost);
     });
 
 export const deletePost = (postModel: PostModel) =>
     validateDeletePostRequest(async (request, response) => {
         const postId = request.params.id;
         const originalPost = await postModel.findById(postId).lean();
-        if (!originalPost){
+        if (!originalPost) {
             throw new BadRequestError('post does not exist');
         }
-        
+
         const { id: user } = request.user;
-        if (user != originalPost.owner){
-            throw new UnauthorizedError('invalid user');
+        if (user != originalPost.owner) {
+            throw new ForbiddenError('invalid user');
         }
-        
+
         await postModel.findByIdAndDelete(postId);
         response.sendStatus(StatusCodes.OK);
     });
@@ -65,15 +69,16 @@ export const deletePost = (postModel: PostModel) =>
 export const getAllPosts = (postModel: PostModel) =>
     validateGetPostRequest(async (request, response) => {
         const filter = request.body;
-        const posts = await postModel.find(filter ? buildPostFilter(filter) : {})
+        const posts = await postModel.find(
+            filter ? buildPostFilter(filter) : {}
+        );
         response.send(posts);
     });
 
 export const getPostById = (postModel: PostModel) =>
     validateGetPostByIdRequest(async (request, response) => {
         const id = request.params.id;
-        
+
         const post = await postModel.findById(id).lean();
         response.send(post);
     });
-    

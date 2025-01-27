@@ -25,12 +25,6 @@ export const createPostsRouter = (
 ) => {
     const handlers = buildRouteHandlers(...buildHandlersParams);
     const router = Router();
-/**
-* @swagger
-* tags:
-*   name: Post
-*   description: The Post API
-*/
 
 /**
  * @swagger
