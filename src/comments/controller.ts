@@ -38,6 +38,7 @@ export const editComment = (commentModel: CommentModel) =>
 export const createComment = (commentModel: CommentModel) =>
     validateCreateCommentRequest(async (request, response) => {
         const { id: user } = request.user;
+        //const existingPost = await postModel.find()
         const createdComment = await commentModel.create({
             ...request.body,
             owner: user
@@ -68,10 +69,8 @@ export const deleteComment = (commentModel: CommentModel) =>
 
 export const getAllComments = (commentModel: CommentModel) =>
     validateGetCommentRequest(async (request, response) => {
-        const filter = request.body;
-        const comments = await commentModel.find(
-            filter ? buildCommentFilter(filter) : {}
-        );
+        const {postId} = request.query;
+        const comments = await commentModel.find({postId});
         response.send(comments);
     });
 

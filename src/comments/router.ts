@@ -115,7 +115,7 @@ export const createCommentsRouter = (
 /**
  * @swagger
  * /comment:
- *   comment:
+ *   post:
  *     summary: Create a new comment
  *     description: Create a new comment
  *     tags:
