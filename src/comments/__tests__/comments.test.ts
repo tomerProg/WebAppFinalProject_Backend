@@ -63,20 +63,28 @@ describe('comments route', () => {
     describe('get comment', () =>{
         test('user can get all comments of a comment', async () => {
             const otherUserId: string = new Types.ObjectId().toString();
-            const otherComment: Comment & { _id: Types.ObjectId } = {
+            const samePostComment: Comment & { _id: Types.ObjectId } = {
                 _id: new Types.ObjectId(),
                 owner: otherUserId, 
                 postId: testPost._id.toString(),
                 content: 'other content'
             }; 
-            await commentModel.create(otherComment);
-                
+            await commentModel.create(samePostComment);
+            
+            const differentPostComment: Comment & { _id: Types.ObjectId } = {
+                _id: new Types.ObjectId(),
+                owner: otherUserId, 
+                postId: new Types.ObjectId().toString(),
+                content: 'different post content'
+            }; 
+            await commentModel.create(differentPostComment);
+
             const response = await request(app).get('/comment').send({postId: testPost._id});
                 
             expect(response.status).toBe(StatusCodes.OK);
             expect(response.body.length).toBe(2);
 
-            const expectedComments = await commentModel.find();
+            const expectedComments = await commentModel.find({postId: testPost._id});
             
             expect(response.body.length).toBe(expectedComments.length);
             for (let commentIndex = 0; commentIndex < expectedComments.length; commentIndex++){
@@ -86,6 +94,7 @@ describe('comments route', () => {
                 expect(response.body[commentIndex].content).toStrictEqual(expectedComments[commentIndex].content);
             }
         });
+
         test('user cannot get comments without a post id', async () => {    
             const response = await request(app).get('/comment');
                 
@@ -293,38 +302,44 @@ describe('comments route', () => {
         });    
     })
 
-    // describe('delete comment', () => {
-    //     test('user deletes a comment', async () => {
-    //         const response = await request(app).delete(`/comment/${testComment._id}`)
+    describe('delete comment', () => {
+        test('user deletes a comment', async () => {
+            const response = await request(app).delete(`/comment/${testComment._id}`)
     
-    //         const deletedComment = await commentModel.findById(testComment._id).lean();
+            const deletedComment = await commentModel.findById(testComment._id).lean();
     
-    //         expect(response.status).toBe(StatusCodes.OK);
-    //         expect(deletedComment).toBeNull();
-    //     });
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(deletedComment).toBeNull();
+        });
     
-    //     test('user cannot delete other comment', async () => {
-    //         const otherUserId: string = new Types.ObjectId().toString();
-    //         const otherComment: Comment & { _id: Types.ObjectId } = {
-    //             _id: new Types.ObjectId(),
-    //             title: 'Other Title', 
-    //             owner: otherUserId, 
-    //             description: 'other description'
-    //         }; 
-    //         await commentModel.create(otherComment);
+        test('user cannot delete a comment which belongs to other', async () => {
+            const otherUserId: string = new Types.ObjectId().toString();
+            const otherComment: Comment & { _id: Types.ObjectId } = {
+                _id: new Types.ObjectId(),
+                owner: otherUserId, 
+                postId: testPost._id.toString(),
+                content: 'other content'
+            }; 
+            await commentModel.create(otherComment);
     
-    //         const response = await request(app).delete(`/comment/${otherComment._id}`)
+            const response = await request(app).delete(`/comment/${otherComment._id}`)
+            const existingComment = await commentModel.findById(otherComment._id).lean();
     
-    //         expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
-    //     });
+            expect(response.status).toBe(StatusCodes.FORBIDDEN);
+            expect(existingComment).not.toBeNull();
+            expect(existingComment?._id).toStrictEqual(otherComment._id);
+            expect(existingComment?.owner).toStrictEqual(otherComment.owner);
+            expect(existingComment?.postId).toStrictEqual(otherComment.postId);
+            expect(existingComment?.content).toStrictEqual(otherComment.content);
+        });
     
-    //     test('user cannot delete a comment that does not exist', async () => {
-    //         await commentModel.deleteOne({ _id: testComment._id });
+        test('user cannot delete a comment that does not exist', async () => {
+            await commentModel.deleteOne({ _id: testComment._id });
     
-    //         const response = await request(app)
-    //         .delete(`/comment/${testComment._id}`);
+            const response = await request(app)
+            .delete(`/comment/${testComment._id}`);
     
-    //         expect(response.status).toBe(StatusCodes.BAD_REQUEST);
-    //     });    
-    // }) 
+            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });    
+    }); 
 });
