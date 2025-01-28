@@ -20,7 +20,7 @@ export const editComment = (commentModel: CommentModel) =>
         }
 
         const { id: user } = request.user;
-        if (user != originalComment.owner) {
+        if (user != originalComment.owner) {   
             throw new ForbiddenError('invalid user');
         }
 

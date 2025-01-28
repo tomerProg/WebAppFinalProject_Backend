@@ -1,3 +1,4 @@
+import { commentModel } from '../../comments/model';
 import { postModel } from '../../posts/model';
 import { userModel } from '../../users/model';
 import { Service } from '../service';
@@ -16,7 +17,8 @@ export class Database extends Service {
     
     getModels = () => ({
         userModel: userModel,
-        postModel: postModel
+        postModel: postModel,
+        commentModel: commentModel
     });
 
     async start() {

@@ -46,7 +46,7 @@ const getCommentRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         body: z.object({
             owner: z.string().optional(),
-            postId: z.string().optional(),
+            postId: z.string(),
             content: z.string().optional(),
         })
     })

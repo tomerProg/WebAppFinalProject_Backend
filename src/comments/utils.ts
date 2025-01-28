@@ -15,7 +15,7 @@ export const buildCommentFilter = (filterValue: CommentFilter): RootFilterQuery<
         filter = Object.assign(filter, {postId: filterValue.postId })
     }
     if (filterValue.content){
-        filter = Object.assign(filter, {title: { $regex: filterValue.content, $options: 'i' } })
+        filter = Object.assign(filter, {content: { $regex: filterValue.content, $options: 'i' } })
     }
     return filter;
 }

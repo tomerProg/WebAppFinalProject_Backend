@@ -7,7 +7,6 @@ import { createTestingAppForRouter } from '../../services/server/__tests__/utils
 import { createTestEnv } from '../../utils/tests';
 import { Post } from '../model';
 import { createPostsRouter } from '../router';
-import { EditPostRequest } from '../validators';
 import { User } from '../../users/model';
 import { createTestingAuthMiddlewareWithUser } from '../../authentication/__tests__/utils';
 
@@ -184,7 +183,7 @@ describe('posts route', () => {
                 .send({
                     title: updatedPostTitle,
                 });
-            expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
+            expect(response.status).toBe(StatusCodes.FORBIDDEN);
             
         });
     
