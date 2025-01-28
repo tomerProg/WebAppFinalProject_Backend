@@ -186,6 +186,42 @@ describe('comments route', () => {
     });
 
     describe('edit comment', () =>{
+        test('user can edit comment conentent', async () => {
+            const updatedContent = 'new content';
+            
+            const response = await request(app)
+                .put(`/comment/${testComment._id}`)
+                .send({
+                    content: updatedContent,
+                });
+            expect(response.status).toBe(StatusCodes.OK);        
+
+            const afterUpdateTestUser = await commentModel.findById(testComment._id).lean();
+            
+            expect(afterUpdateTestUser?.owner).toStrictEqual(testComment.owner);
+            expect(afterUpdateTestUser?.postId).toStrictEqual(testComment.postId);
+            expect(afterUpdateTestUser?.content).toStrictEqual(updatedContent);
+        });
+        
+        test('edit comment with not editable field should edit only the valid fields', async () => {
+            const updatedContent = 'new content';
+            
+            const response = await request(app).put(`/comment/${testComment._id}`).send({
+                ...testComment, 
+                owner: 'thief owner',
+                postId: 'thief post',
+                content: updatedContent
+            });
+    
+            expect(response.status).toBe(StatusCodes.OK);
+    
+            const afterUpdateTestUser = await commentModel.findById(testComment._id).lean();
+            
+            expect(afterUpdateTestUser?.owner).toStrictEqual(testComment.owner);
+            expect(afterUpdateTestUser?.postId).toStrictEqual(testComment.postId);
+            expect(afterUpdateTestUser?.content).toStrictEqual(updatedContent);
+        });
+
         test('user cannot edit comment of other user', async () => {
             const otherUserId: string = new Types.ObjectId().toString();
             const otherComment: Comment & { _id: Types.ObjectId } = {
@@ -196,47 +232,27 @@ describe('comments route', () => {
             }; 
             await commentModel.create(otherComment);
     
-            const updatedCommentContent = 'new content';
+            const updatedContent = 'new content';
             
             const response = await request(app)
                 .put(`/comment/${otherComment._id}`)
                 .send({
-                    content: updatedCommentContent,
+                    content: updatedContent,
                 });
-            expect(response.status).toBe(StatusCodes.FORBIDDEN);
-            
+            expect(response.status).toBe(StatusCodes.FORBIDDEN);        
         });
     
-    //     test('edit comment with not editable field should edit only the valid fields', async () => {
-    //         const updatedCommentTitle = 'new title';
-    //         const updatedDescription = 'new description'
-    //         const response = await request(app).put(`/comment/${testComment._id}`).send({
-    //             ...testComment,
-    //             title: updatedCommentTitle, 
-    //             owner: 'thief',
-    //             description: updatedDescription
-    //         });
+        
     
-    //         expect(response.status).toBe(StatusCodes.OK);
+        test('edit not existing comment should return BAD_REQUEST', async () => {
+            await commentModel.deleteOne({ _id: testComment._id });
+            const updatedContent = 'new content';
+            const response = await request(app).put(`/comment/${testComment._id}`).send({
+                content: updatedContent 
+            });
     
-    //         const afterUpdateTestUser = await commentModel.findById(testComment._id).lean();
-    
-    //         expect(afterUpdateTestUser?.title).toStrictEqual(updatedCommentTitle);
-    //         expect(afterUpdateTestUser?.owner).toStrictEqual(testComment.owner);
-    //         expect(afterUpdateTestUser?.description).toStrictEqual(updatedDescription);
-    //     });
-    
-    //     test('edit not existing comment should return BAD_REQUEST', async () => {
-    //         await commentModel.deleteOne({ _id: testComment._id });
-    //         const updatedCommentTitle = 'new title';
-    //         const response = await request(app).put(`/comment/${testComment._id}`).send({
-    //             title: updatedCommentTitle, 
-    //             owner: testComment.owner,
-    //             description: testComment.description 
-    //         });
-    
-    //         expect(response.status).toBe(StatusCodes.BAD_REQUEST);
-    //     });    
+            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });    
     });
 
     // describe('create comment', () =>{
