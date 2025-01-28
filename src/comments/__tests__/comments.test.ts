@@ -242,8 +242,6 @@ describe('comments route', () => {
             expect(response.status).toBe(StatusCodes.FORBIDDEN);        
         });
     
-        
-    
         test('edit not existing comment should return BAD_REQUEST', async () => {
             await commentModel.deleteOne({ _id: testComment._id });
             const updatedContent = 'new content';
@@ -255,48 +253,45 @@ describe('comments route', () => {
         });    
     });
 
-    // describe('create comment', () =>{
-    //     test('user creates a comment', async () => { 
-    //         await commentModel.deleteOne({ _id: testComment._id });
+    describe('create comment', () =>{
+        test('user creates a comment', async () => { 
+            await commentModel.deleteOne({ _id: testComment._id });
             
-    //         const response = await request(app)
-    //         .comment('/comment').send({...testComment})
+            const response = await request(app).post('/comment').send({...testComment})
     
-    //         const createdComment = await commentModel.findById(testComment._id).lean();
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(response.body).not.toBeNull();
+            expect(response.body?.owner).toStrictEqual(loginUser._id.toString());
+            expect(response.body?.postId).toStrictEqual(testComment.postId);
+            expect(response.body?.content).toStrictEqual(testComment.content);
+        });
     
-    //         expect(response.status).toBe(StatusCodes.OK);
-    //         expect(createdComment).not.toBeNull();
-    //         expect(createdComment?.owner).toStrictEqual(loginUser._id.toString())
-    //     });
-    
-    //     test('enforce the user who created the comment to be the owner of the comment', async () => {
-    //         await commentModel.deleteOne({ _id: testComment._id });
-    //         const otherUserId: string = new Types.ObjectId().toString();
+        test('enforce the user who created the comment to be the owner of the comment', async () => {
+            await commentModel.deleteOne({ _id: testComment._id });
+            const otherUserId: string = new Types.ObjectId().toString();
              
-    //         const response = await request(app).comment('/comment').send({
-    //             ...testComment,
-    //             owner: otherUserId
-    //         })
+            const response = await request(app).post('/comment').send({
+                ...testComment,
+                owner: otherUserId
+            })
+
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(response.body).not.toBeNull();
+            expect(response.body?.owner).toStrictEqual(loginUser._id.toString());
+            expect(response.body?.postId).toStrictEqual(testComment.postId);
+            expect(response.body?.content).toStrictEqual(testComment.content);
+        });
     
-    //         const createdComment = await commentModel.findById(testComment._id).lean();
+        test('user cannot create comment without required fields', async () => {
+            await commentModel.deleteOne({ _id: testComment._id });
     
-    //         expect(response.status).toBe(StatusCodes.OK);
-    //         expect(createdComment).not.toBeNull();
-    //         expect(createdComment?.owner).toStrictEqual(loginUser._id.toString())
+            const response = await request(app).post('/comment').send({
+                content: testComment.content            
+            });
     
-    //     });
-    
-    //     test('user cannot create comment without required fields', async () => {
-    //         await commentModel.deleteOne({ _id: testComment._id });
-    
-    //         const response = await request(app)
-    //         .comment('/comment').send({
-    //             title: testComment.title            
-    //         })
-    
-    //         expect(response.status).toBe(StatusCodes.BAD_REQUEST);
-    //     });    
-    // })
+            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });    
+    })
 
     // describe('delete comment', () => {
     //     test('user deletes a comment', async () => {
