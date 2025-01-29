@@ -49,11 +49,10 @@ export const createCommentsRouter = (
  *         content:
  *           type: string
  *           description: The content of the comment
- * 
  *       example:
- *         _id:   435ce34t8373jfo4nvfa43193  
+ *         _id:   679a70b9f1d91978d2650d84  
  *         owner: 324vt23r4tr234t245tbv45by
- *         postId: 245234t234234r234r23f4
+ *         postId: 679a708bf1d91978d2650d81
  *         content: my first comment
  */
 
@@ -65,6 +64,13 @@ export const createCommentsRouter = (
  *     description: Retrieve a list of all comments
  *     tags:
  *       - Comment
+ *     parameters:
+ *       - in: query
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           description: post id of all the comments
  *     responses:
  *       200:
  *         description: A list of comments
