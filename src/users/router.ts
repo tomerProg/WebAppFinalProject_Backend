@@ -12,7 +12,8 @@ import * as usersHandlers from './handlers';
 const buildRouteHandlers = (
     dependencies: UsersRouterDependencies
 ): Record<keyof typeof usersHandlers, RequestHandler> => ({
-    editUser: usersHandlers.editUser(dependencies.userModel)
+    editUser: usersHandlers.editUser(dependencies.userModel),
+    getUserById: usersHandlers.getUserById(dependencies.userModel)
 });
 
 export const createUsersRouter = (
@@ -27,7 +28,7 @@ export const createUsersRouter = (
      * /user:
      *   put:
      *     summary: Update user attributes
-     *     description: Update an existing post
+     *     description: Update an existing user
      *     tags:
      *       - User
      *     security:
@@ -58,6 +59,35 @@ export const createUsersRouter = (
      *         description: Server error
      */
     router.put('/', authMiddleware, handlers.editUser);
+
+    /**
+     * @swagger
+     * /user/byId:
+     *   get:
+     *     summary: get user attributes
+     *     description: get an existing user
+     *     tags:
+     *       - User
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: The ID of the user
+     *     responses:
+     *       200:
+     *         description: user public attributes
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UserPublicAttr'
+     *       404:
+     *         description: Post not found
+     *       500:
+     *         description: Server error
+     */
+    router.get('/byId/:id', handlers.getUserById);
 
     return router;
 };
