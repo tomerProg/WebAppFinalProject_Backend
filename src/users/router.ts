@@ -1,7 +1,4 @@
-import express, { RequestHandler, Router } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import { createMulterUpload } from '../files/logic';
-import { UsersRouterConfig } from './config';
+import { RequestHandler, Router } from 'express';
 import { UsersRouterDependencies } from './dependencies';
 import * as usersHandlers from './handlers';
 
@@ -21,7 +18,6 @@ const buildRouteHandlers = (
 
 export const createUsersRouter = (
     authMiddleware: RequestHandler,
-    config: UsersRouterConfig,
     ...buildHandlersParams: Parameters<typeof buildRouteHandlers>
 ) => {
     const handlers = buildRouteHandlers(...buildHandlersParams);

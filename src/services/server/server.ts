@@ -5,26 +5,26 @@ import * as http from 'http';
 import swaggerUI from 'swagger-ui-express';
 import { createAuthMiddleware } from '../../authentication/middlewares';
 import { createAuthRouter } from '../../authentication/router';
+import { createFileRouterConfig } from '../../files/config';
+import { createFilesRouter } from '../../files/router';
+import { postModel } from '../../posts/model';
+import { createPostsRouter } from '../../posts/router';
 import specs from '../../swagger';
 import { createUsersRouter } from '../../users/router';
 import { Service } from '../service';
 import { ServerConfig } from './config';
 import { ServerDependencies } from './dependencies';
 import { expressAppRoutesErrorHandler } from './utils';
-import { createPostsRouter } from '../../posts/router';
-import { postModel } from '../../posts/model';
 
 export class Server extends Service {
     private app: Express;
     private server: http.Server;
-    private serverUrl: string;
 
     constructor(
         private readonly config: ServerConfig,
         private readonly dependencies: ServerDependencies
     ) {
         super();
-        const { port, domain } = config;
 
         this.app = express();
         this.useMiddlewares();
@@ -32,7 +32,6 @@ export class Server extends Service {
         this.useErrorHandler();
 
         this.server = http.createServer(this.app);
-        this.serverUrl = `http://${domain}:${port}/`;
     }
 
     useMiddlewares = () => {
@@ -42,20 +41,20 @@ export class Server extends Service {
     };
 
     useRouters = () => {
-        const { authConfig, profileImagesDestination } = this.config;
         const { database } = this.dependencies;
         const { userModel } = database.getModels();
-        const authMiddleware = createAuthMiddleware(authConfig.tokenSecret);
-
-        this.app.use('/auth', createAuthRouter(authConfig, { userModel }));
-        const usersRouterConfig = {
-            serverUrl: this.serverUrl,
-            profileImagesDestination
-        };
-        this.app.use(
-            '/user',
-            createUsersRouter(authMiddleware, usersRouterConfig, { userModel })
+        const { filesRouterConfig, authRouterConfig } =
+            this.createRoutersConfigs();
+        const authMiddleware = createAuthMiddleware(
+            authRouterConfig.tokenSecret
         );
+
+        this.app.use(
+            '/auth',
+            createAuthRouter(authRouterConfig, { userModel })
+        );
+        this.app.use('/files', createFilesRouter(filesRouterConfig));
+        this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
         this.app.use('/post', createPostsRouter(authMiddleware, { postModel }));
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
@@ -63,6 +62,11 @@ export class Server extends Service {
     useErrorHandler = () => {
         this.app.use(expressAppRoutesErrorHandler);
     };
+
+    createRoutersConfigs = () => ({
+        filesRouterConfig: createFileRouterConfig(this.config, 'http'),
+        authRouterConfig: this.config.authConfig
+    });
 
     getExpressApp = () => this.app;
 
