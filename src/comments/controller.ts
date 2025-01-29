@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, ForbiddenError } from '../services/server/exceptions';
 import { CommentModel } from './model';
-import { buildCommentFilter } from './utils';
 import {
     validateCreateCommentRequest,
     validateDeleteCommentRequest,
@@ -9,6 +8,7 @@ import {
     validateGetCommentByIdRequest,
     validateGetCommentRequest
 } from './validators';
+import { postModel } from '../posts/model';
 
 export const editComment = (commentModel: CommentModel) =>
     validateEditCommentRequest(async (request, response) => {
@@ -38,7 +38,13 @@ export const editComment = (commentModel: CommentModel) =>
 export const createComment = (commentModel: CommentModel) =>
     validateCreateCommentRequest(async (request, response) => {
         const { id: user } = request.user;
-        //const existingPost = await postModel.find()
+        const {postId} = request.body;
+        
+        const existingPost = await postModel.find({_id:postId}).lean();
+        if (!existingPost){
+            throw new BadRequestError('post does not exists');
+        }
+
         const createdComment = await commentModel.create({
             ...request.body,
             owner: user

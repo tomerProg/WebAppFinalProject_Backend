@@ -65,8 +65,6 @@ export const createCommentsRouter = (
  *     description: Retrieve a list of all comments
  *     tags:
  *       - Comment
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of comments
@@ -79,7 +77,7 @@ export const createCommentsRouter = (
  *       500:
  *         description: Server error
  */
-    router.get('/', authMiddleware, handlers.getAllComments)   
+    router.get('/', handlers.getAllComments)   
 
 /**
  * @swagger
@@ -89,8 +87,6 @@ export const createCommentsRouter = (
  *     description: Retrieve a single comment by its ID
  *     tags:
  *       - Comment
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -110,7 +106,7 @@ export const createCommentsRouter = (
  *       500:
  *         description: Server error
  */
-    router.get("/:id", authMiddleware, handlers.getCommentById);
+    router.get("/:id", handlers.getCommentById);
    
 /**
  * @swagger

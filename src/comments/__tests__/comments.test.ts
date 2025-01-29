@@ -219,6 +219,16 @@ describe('comments route', () => {
     
             expect(response.status).toBe(StatusCodes.BAD_REQUEST);
         });    
+        // test('user cannot create a comment for an not existing post', async () => {
+        //     await postModel.deleteOne({ _id: testPost._id });
+    
+        //     const response = await request(app).post('/comment').send({
+        //         content: testComment.content,
+        //         postId: testPost._id.toString()            
+        //     });
+    
+        //     expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        // });    
     })
 
     describe('delete comment', () => {

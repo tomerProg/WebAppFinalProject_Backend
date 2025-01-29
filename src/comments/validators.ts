@@ -42,25 +42,24 @@ export const validateDeleteCommentRequest = validateRequest(
     deleteCommentRequestZodSchema
 );
 
-const getCommentRequestZodSchema = authenticatedRequestZodSchema.and(
+const getCommentRequestZodSchema = 
     z.object({
         query: z.object({
             postId: z.string()
         })
     })
-);
+
 export type GetCommentRequest = z.infer<typeof  getCommentRequestZodSchema>;
 export const validateGetCommentRequest = validateRequest(
     getCommentRequestZodSchema
 );
 
-const getCommentByIdRequestZodSchema = authenticatedRequestZodSchema.and(
-    z.object({
-        params: z.object({
+const getCommentByIdRequestZodSchema = z.object({
+    params: z.object({
             id: z.string()
         })
-    })
-);
+    });
+
 export type GetCommentByIdRequest = z.infer<typeof  getCommentByIdRequestZodSchema>;
 export const validateGetCommentByIdRequest = validateRequest(
     getCommentByIdRequestZodSchema
