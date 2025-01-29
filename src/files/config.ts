@@ -12,5 +12,5 @@ export const createFileRouterConfig = (
 ): FileRouterConfig => ({
     serverUrl: `${httpProtocol}://${serverConfig.domain}:${serverConfig.port}/`,
     profileImagesDestination: serverConfig.profileImagesDestination,
-    postImagesDestination: ''
+    postImagesDestination: serverConfig.postImagesDestination
 });
