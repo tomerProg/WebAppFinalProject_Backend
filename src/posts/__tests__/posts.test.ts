@@ -7,7 +7,6 @@ import { createTestingAppForRouter } from '../../services/server/__tests__/utils
 import { createTestEnv } from '../../utils/tests';
 import { Post } from '../model';
 import { createPostsRouter } from '../router';
-import { EditPostRequest } from '../validators';
 import { User } from '../../users/model';
 import { createTestingAuthMiddlewareWithUser } from '../../authentication/__tests__/utils';
 
@@ -167,27 +166,23 @@ describe('posts route', () => {
     })
 
     describe('edit post', () =>{
-        test('user cannot edit post of other user', async () => {
-            const otherUserId: string = new Types.ObjectId().toString();
-            const otherPost: Post & { _id: Types.ObjectId } = {
-                _id: new Types.ObjectId(),
-                title: 'Other Title', 
-                owner: otherUserId, 
-                description: 'other description'
-            }; 
-            await postModel.create(otherPost);
-    
+        test('user can edit his post', async () => {
             const updatedPostTitle = 'new title';
-            
+            const updatedDescription = 'new description'
             const response = await request(app)
-                .put(`/post/${otherPost._id}`)
+                .put(`/post/${testPost._id}`)
                 .send({
                     title: updatedPostTitle,
+                    description: updatedDescription
                 });
-            expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
+            expect(response.status).toBe(StatusCodes.OK);
             
+            const afterUpdateTestUser = await postModel.findById(testPost._id).lean();
+            
+            expect(afterUpdateTestUser?.title).toStrictEqual(updatedPostTitle);
+            expect(afterUpdateTestUser?.owner).toStrictEqual(testPost.owner);
+            expect(afterUpdateTestUser?.description).toStrictEqual(updatedDescription);    
         });
-    
         test('edit post with not editable field should edit only the valid fields', async () => {
             const updatedPostTitle = 'new title';
             const updatedDescription = 'new description'
@@ -206,6 +201,29 @@ describe('posts route', () => {
             expect(afterUpdateTestUser?.owner).toStrictEqual(testPost.owner);
             expect(afterUpdateTestUser?.description).toStrictEqual(updatedDescription);
         });
+
+        test('user cannot edit post of other user', async () => {
+            const otherUserId: string = new Types.ObjectId().toString();
+            const otherPost: Post & { _id: Types.ObjectId } = {
+                _id: new Types.ObjectId(),
+                title: 'Other Title', 
+                owner: otherUserId, 
+                description: 'other description'
+            }; 
+            await postModel.create(otherPost);
+    
+            const updatedPostTitle = 'new title';
+            
+            const response = await request(app)
+                .put(`/post/${otherPost._id}`)
+                .send({
+                    title: updatedPostTitle,
+                });
+            expect(response.status).toBe(StatusCodes.FORBIDDEN);
+            
+        });
+    
+        
     
         test('edit not existing post should return BAD_REQUEST', async () => {
             await postModel.deleteOne({ _id: testPost._id });
@@ -227,11 +245,13 @@ describe('posts route', () => {
             const response = await request(app)
             .post('/post').send({...testPost})
     
-            const createdPost = await postModel.findById(testPost._id).lean();
-    
             expect(response.status).toBe(StatusCodes.OK);
-            expect(createdPost).not.toBeNull();
-            expect(createdPost?.owner).toStrictEqual(loginUser._id.toString())
+            expect(response.body).not.toBeNull();
+            expect(response.body?.owner).toStrictEqual(loginUser._id.toString());
+            expect(response.body?.title).toStrictEqual(testPost.title);
+            expect(response.body?.description).toStrictEqual(testPost.description);
+            expect(response.body?.suggestion).toStrictEqual(testPost.suggestion);
+            expect(response.body?.imageSrc).toStrictEqual(testPost.imageSrc);
         });
     
         test('enforce the user who created the post to be the owner of the post', async () => {
@@ -246,9 +266,12 @@ describe('posts route', () => {
             const createdPost = await postModel.findById(testPost._id).lean();
     
             expect(response.status).toBe(StatusCodes.OK);
-            expect(createdPost).not.toBeNull();
-            expect(createdPost?.owner).toStrictEqual(loginUser._id.toString())
-    
+            expect(response.body).not.toBeNull();
+            expect(response.body?.owner).toStrictEqual(loginUser._id.toString());
+            expect(response.body?.title).toStrictEqual(testPost.title);
+            expect(response.body?.description).toStrictEqual(testPost.description);
+            expect(response.body?.suggestion).toStrictEqual(testPost.suggestion);
+            expect(response.body?.imageSrc).toStrictEqual(testPost.imageSrc);
         });
     
         test('user cannot create post without required fields', async () => {
@@ -285,7 +308,7 @@ describe('posts route', () => {
     
             const response = await request(app).delete(`/post/${otherPost._id}`)
     
-            expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
+            expect(response.status).toBe(StatusCodes.FORBIDDEN);
         });
     
         test('user cannot delete a post that does not exist', async () => {

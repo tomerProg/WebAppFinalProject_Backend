@@ -13,6 +13,8 @@ import { ServerDependencies } from './dependencies';
 import { expressAppRoutesErrorHandler } from './utils';
 import { createPostsRouter } from '../../posts/router';
 import { postModel } from '../../posts/model';
+import { createCommentsRouter } from '../../comments/router';
+import { commentModel } from '../../comments/model';
 
 export class Server extends Service {
     private app: Express;
@@ -47,6 +49,7 @@ export class Server extends Service {
         this.app.use('/auth', createAuthRouter(authConfig, { userModel }));
         this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
         this.app.use('/post', createPostsRouter(authMiddleware, { postModel }));
+        this.app.use('/comment', createCommentsRouter(authMiddleware, { commentModel }));
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
