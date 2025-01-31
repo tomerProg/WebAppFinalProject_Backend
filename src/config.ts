@@ -8,7 +8,8 @@ const environmentVariablesZodScema = z.object({
     DB_CONNECT: z.string(),
     AUTH_TOKEN_SECRET: z.string(),
     AUTH_TOKEN_EXPIRES: z.string(),
-    AUTH_REFRESH_TOKEN_EXPIRES: z.string()
+    AUTH_REFRESH_TOKEN_EXPIRES: z.string(),
+    OPENAI_API_KEY: z.string()
 });
 export type EnvironmentVariables = z.infer<typeof environmentVariablesZodScema>;
 
