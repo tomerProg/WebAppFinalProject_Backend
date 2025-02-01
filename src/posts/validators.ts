@@ -47,15 +47,13 @@ export const validateDeletePostRequest = validateRequest(
     deletePostRequestZodSchema
 );
 
-const getPostRequestZodSchema = authenticatedRequestZodSchema.and(
-    z.object({
-        body: z.object({
-            title: z.string().optional(),
-            description: z.string().optional(),
-            owner: z.string().optional()
-        })
+const getPostRequestZodSchema = z.object({
+    body: z.object({
+        title: z.string().optional(),
+        description: z.string().optional(),
+        owner: z.string().optional()
     })
-);
+});
 export type GetPostRequest = z.infer<typeof getPostRequestZodSchema>;
 export const validateGetPostRequest = validateRequest(getPostRequestZodSchema);
 
@@ -64,9 +62,7 @@ const paramsWithIdZodScheam = z.object({
         id: z.string()
     })
 });
-const getPostByIdRequestZodSchema = authenticatedRequestZodSchema.and(
-    paramsWithIdZodScheam
-);
+const getPostByIdRequestZodSchema = paramsWithIdZodScheam;
 export type GetPostByIdRequest = z.infer<typeof getPostByIdRequestZodSchema>;
 export const validateGetPostByIdRequest = validateRequest(
     getPostByIdRequestZodSchema

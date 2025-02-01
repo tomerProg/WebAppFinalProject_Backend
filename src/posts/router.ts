@@ -35,8 +35,6 @@ export const createPostsRouter = (
      *     description: Retrieve a list of all posts
      *     tags:
      *       - Post
-     *     security:
-     *       - bearerAuth: []
      *     responses:
      *       200:
      *         description: A list of posts
@@ -49,7 +47,7 @@ export const createPostsRouter = (
      *       500:
      *         description: Server error
      */
-    router.get('/', authMiddleware, handlers.getAllPosts);
+    router.get('/', handlers.getAllPosts);
 
     /**
      * @swagger
@@ -59,8 +57,6 @@ export const createPostsRouter = (
      *     description: Retrieve a single post by its ID
      *     tags:
      *       - Post
-     *     security:
-     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -80,7 +76,7 @@ export const createPostsRouter = (
      *       500:
      *         description: Server error
      */
-    router.get('/:id', authMiddleware, handlers.getPostById);
+    router.get('/:id', handlers.getPostById);
 
     /**
      * @swagger
