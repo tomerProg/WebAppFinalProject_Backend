@@ -38,11 +38,9 @@ describe('posts route', () => {
     };
 
     const GENERATED_SUGGESTION = 'generated suggestion';
-    const chatGeneratorConfig: ChatGeneratorConfig  = {
-        apiKey: '',
-        environment: ''
-    };
-    const chatGenerator = new ChatGenerator(chatGeneratorConfig)
+    const chatGeneratorConfig: ChatGeneratorConfig  = {apiKey: ''};
+    const chatGenerator = new ChatGenerator(chatGeneratorConfig);
+
     jest.spyOn(chatGenerator, 'getSuggestion').mockResolvedValue(GENERATED_SUGGESTION);
 
     const postsRouter = createPostsRouter(authMiddleware, { postModel, chatGenerator });

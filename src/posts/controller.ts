@@ -9,9 +9,7 @@ import {
     validateGetPostByIdRequest,
     validateGetPostRequest
 } from './validators';
-import { createChatGeneratorConfig } from '../openai/config';
 import { ChatGenerator } from '../openai/openai';
-import { environmentVariables } from '../config';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {

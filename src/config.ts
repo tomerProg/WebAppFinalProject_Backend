@@ -10,7 +10,6 @@ const environmentVariablesZodScema = z.object({
     AUTH_TOKEN_EXPIRES: z.string(),
     AUTH_REFRESH_TOKEN_EXPIRES: z.string(),
     OPENAI_API_KEY: z.string(),
-    ENVIRONMENT: z.string()
 });
 export type EnvironmentVariables = z.infer<typeof environmentVariablesZodScema>;
 
