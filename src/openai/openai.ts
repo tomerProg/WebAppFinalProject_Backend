@@ -10,7 +10,11 @@ export class ChatGenerator {
         this.openAI = new OpenAI({apiKey: config.apiKey});
     }
 
-    async getSuggestion(description: string){
+    async getSuggestion(description: string) : Promise<string | undefined>{
+        if(this.config.environment === 'TEST'){
+          return 'generated suggestion'
+        }
+
         try {
             const response = await this.openAI.chat.completions.create({
               model: "gpt-3.5-turbo",
@@ -24,8 +28,7 @@ export class ChatGenerator {
         
             return response.choices[0]?.message?.content || "No response from AI.";
           } catch (error) {
-            console.error("Error:", error);
-            return "An error occurred.";
+            return undefined;
         }
     }
 }
