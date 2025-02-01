@@ -39,7 +39,7 @@ export const editPost = (postModel: PostModel) =>
     });
 
 
-export const createPost = (postModel: PostModel) =>
+export const createPost = (postModel: PostModel, chatGenerator: ChatGenerator) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
         const createdPost = await postModel.create({
@@ -52,14 +52,13 @@ export const createPost = (postModel: PostModel) =>
         }
 
         if (!createdPost.suggestion){
-            createdPost.suggestion = await updateSuggestion(postModel, createdPost)
+            createdPost.suggestion = await updateSuggestion(postModel, chatGenerator, createdPost)
         }
         response.status(StatusCodes.OK).send(createdPost);
     });
 
-const updateSuggestion = async (postModel: PostModel, post: PostWithId ) : Promise<string | undefined> => {
-    const ChatGeneratorConfig = createChatGeneratorConfig(environmentVariables)
-    const chatGenerator = new ChatGenerator(ChatGeneratorConfig);
+const updateSuggestion = async (postModel: PostModel, chatGenerator: ChatGenerator, post: PostWithId )
+    : Promise<string | undefined> => {
     const suggestion =  await chatGenerator.getSuggestion(post.description);
     const { modifiedCount } = await postModel.updateOne(
                 { _id: post._id, 
