@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, ForbiddenError } from '../services/server/exceptions';
-import { PostModel } from './model';
+import { PostModel, PostWithId } from './model';
 import { buildPostFilter } from './utils';
 import {
     validateCreatePostRequest,
@@ -9,6 +9,9 @@ import {
     validateGetPostByIdRequest,
     validateGetPostRequest
 } from './validators';
+import { createChatGeneratorConfig } from '../openai/config';
+import { ChatGenerator } from '../openai/openai';
+import { environmentVariables } from '../config';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
@@ -35,6 +38,7 @@ export const editPost = (postModel: PostModel) =>
         response.sendStatus(StatusCodes.OK);
     });
 
+
 export const createPost = (postModel: PostModel) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
@@ -46,8 +50,27 @@ export const createPost = (postModel: PostModel) =>
         if (!createdPost) {
             throw new BadRequestError('could not create post');
         }
+
+        if (!createdPost.suggestion){
+            createdPost.suggestion = await updateSuggestion(postModel, createdPost)
+        }
         response.status(StatusCodes.OK).send(createdPost);
     });
+
+const updateSuggestion = async (postModel: PostModel, post: PostWithId ) : Promise<string | undefined> => {
+    const ChatGeneratorConfig = createChatGeneratorConfig(environmentVariables)
+    const chatGenerator = new ChatGenerator(ChatGeneratorConfig);
+    const suggestion =  await chatGenerator.getSuggestion(post.description);
+    const { modifiedCount } = await postModel.updateOne(
+                { _id: post._id, 
+                  owner: post.owner, 
+                  title: post.title, 
+                  description: post.description, 
+                  imageSrc:post.imageSrc},
+                { suggestion }
+            );
+    return modifiedCount === 1 ? suggestion : undefined;
+};
 
 export const deletePost = (postModel: PostModel) =>
     validateDeletePostRequest(async (request, response) => {
