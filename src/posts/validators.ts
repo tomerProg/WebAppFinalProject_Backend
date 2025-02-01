@@ -15,7 +15,7 @@ const editPostRequestZodSchema = authenticatedRequestZodSchema.and(
         })
     })
 );
-export type EditPostRequest = z.infer<typeof  editPostRequestZodSchema>;
+export type EditPostRequest = z.infer<typeof editPostRequestZodSchema>;
 export const validateEditPostRequest = validateRequest(
     editPostRequestZodSchema
 );
@@ -30,7 +30,7 @@ const createPostRequestZodSchema = authenticatedRequestZodSchema.and(
         })
     })
 );
-export type CreatePostRequest = z.infer<typeof  createPostRequestZodSchema>;
+export type CreatePostRequest = z.infer<typeof createPostRequestZodSchema>;
 export const validateCreatePostRequest = validateRequest(
     createPostRequestZodSchema
 );
@@ -38,38 +38,48 @@ export const validateCreatePostRequest = validateRequest(
 const deletePostRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         params: z.object({
-            id: z.string(),
+            id: z.string()
         })
     })
 );
-export type DeletePostRequest = z.infer<typeof  deletePostRequestZodSchema>;
+export type DeletePostRequest = z.infer<typeof deletePostRequestZodSchema>;
 export const validateDeletePostRequest = validateRequest(
     deletePostRequestZodSchema
 );
-
 
 const getPostRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         body: z.object({
             title: z.string().optional(),
             description: z.string().optional(),
-            owner: z.string().optional(),
+            owner: z.string().optional()
         })
     })
 );
-export type GetPostRequest = z.infer<typeof  getPostRequestZodSchema>;
-export const validateGetPostRequest = validateRequest(
-    getPostRequestZodSchema
-);
+export type GetPostRequest = z.infer<typeof getPostRequestZodSchema>;
+export const validateGetPostRequest = validateRequest(getPostRequestZodSchema);
 
-const getPostByIdRequestZodSchema = authenticatedRequestZodSchema.and(
-    z.object({
-        params: z.object({
-            id: z.string()
-        })
+const paramsWithIdZodScheam = z.object({
+    params: z.object({
+        id: z.string()
     })
+});
+const getPostByIdRequestZodSchema = authenticatedRequestZodSchema.and(
+    paramsWithIdZodScheam
 );
-export type GetPostByIdRequest = z.infer<typeof  getPostByIdRequestZodSchema>;
+export type GetPostByIdRequest = z.infer<typeof getPostByIdRequestZodSchema>;
 export const validateGetPostByIdRequest = validateRequest(
     getPostByIdRequestZodSchema
 );
+
+const setLikedPostZodSchema = authenticatedRequestZodSchema
+    .and(paramsWithIdZodScheam)
+    .and(
+        z.object({
+            body: z.object({
+                like: z.boolean().optional()
+            })
+        })
+    );
+export type LikePostRequest = z.infer<typeof setLikedPostZodSchema>;
+export const validateLikePostRequest = validateRequest(setLikedPostZodSchema);
