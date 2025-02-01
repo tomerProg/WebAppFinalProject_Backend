@@ -8,7 +8,7 @@
     "build": "tsc",
     "build:watch": "tsc -w",
     "test": "jest --detectOpenHandles --forceExit --runInBand cross-env ENVIRONMENT=TEST",
-    "test:coverage": "jest --detectOpenHandles --forceExit --runInBand --coverage",
+    "test:coverage": "jest --detectOpenHandles --forceExit --runInBand --coverage cross-env ENVIRONMENT=TEST",
     "lint": "eslint ."
   },
   "repository": {
