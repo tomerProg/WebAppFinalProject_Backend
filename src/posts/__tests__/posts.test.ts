@@ -9,6 +9,8 @@ import { Post } from '../model';
 import { createPostsRouter } from '../router';
 import { User } from '../../users/model';
 import { createTestingAuthMiddlewareWithUser } from '../../authentication/__tests__/utils';
+import { ChatGenerator } from '../../openai/openai';
+import { ChatGeneratorConfig } from '../../openai/config';
 
 describe('posts route', () => {
     const env = createTestEnv();
@@ -35,7 +37,15 @@ describe('posts route', () => {
         suggestion: 'suggestion'
     };
 
-    const postsRouter = createPostsRouter(authMiddleware, { postModel });
+    const GENERATED_SUGGESTION = 'generated suggestion';
+    const chatGeneratorConfig: ChatGeneratorConfig  = {
+        apiKey: '',
+        environment: ''
+    };
+    const chatGenerator = new ChatGenerator(chatGeneratorConfig)
+    jest.spyOn(chatGenerator, 'getSuggestion').mockResolvedValue(GENERATED_SUGGESTION);
+
+    const postsRouter = createPostsRouter(authMiddleware, { postModel, chatGenerator });
     const app = createTestingAppForRouter('/post', postsRouter);
 
     beforeAll(async () => {
@@ -286,7 +296,7 @@ describe('posts route', () => {
         
             expect(response.status).toBe(StatusCodes.OK);
             expect(response.body).not.toBeNull();
-            expect(response.body?.suggestion).not.toBeNull();
+            expect(response.body?.suggestion).toStrictEqual(GENERATED_SUGGESTION);
 
             expect(response.body?.owner).toStrictEqual(loginUser._id.toString());
             expect(response.body?.title).toStrictEqual(postWithoutSuggestion.title);
