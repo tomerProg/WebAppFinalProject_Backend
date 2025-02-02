@@ -8,8 +8,6 @@ export interface Post {
     suggestion?: string, 
     imageSrc?: string }
 
-export type PostWithId = Post & { _id: Types.ObjectId }
-
 export const postZodSchema: z.ZodType<Post> = z.object({
     title: z.string(),
     owner: z.string(),

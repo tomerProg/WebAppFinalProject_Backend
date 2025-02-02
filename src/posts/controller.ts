@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, ForbiddenError } from '../services/server/exceptions';
-import { PostModel, PostWithId } from './model';
+import { PostModel} from './model';
 import { buildPostFilter } from './utils';
 import {
     validateCreatePostRequest,
@@ -40,34 +40,21 @@ export const editPost = (postModel: PostModel) =>
 export const createPost = (postModel: PostModel, chatGenerator: ChatGenerator) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
+        const postToCreate = request.body;
+        const suggestion = postToCreate?.suggestion ? postToCreate.suggestion : 
+            await chatGenerator.getSuggestion(postToCreate.description); 
+        
         const createdPost = await postModel.create({
-            ...request.body,
-            owner: user
+            ...postToCreate,
+            owner: user,
+            suggestion: suggestion
         });
 
         if (!createdPost) {
             throw new BadRequestError('could not create post');
         }
-
-        if (!createdPost.suggestion){
-            createdPost.suggestion = await updateSuggestion(postModel, chatGenerator, createdPost)
-        }
         response.status(StatusCodes.OK).send(createdPost);
     });
-
-const updateSuggestion = async (postModel: PostModel, chatGenerator: ChatGenerator, post: PostWithId )
-    : Promise<string | undefined> => {
-    const suggestion =  await chatGenerator.getSuggestion(post.description);
-    const { modifiedCount } = await postModel.updateOne(
-                { _id: post._id, 
-                  owner: post.owner, 
-                  title: post.title, 
-                  description: post.description, 
-                  imageSrc:post.imageSrc},
-                { suggestion }
-            );
-    return modifiedCount === 1 ? suggestion : undefined;
-};
 
 export const deletePost = (postModel: PostModel) =>
     validateDeletePostRequest(async (request, response) => {
