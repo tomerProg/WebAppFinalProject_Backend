@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import * as fs from 'fs';
 import { FileRouterConfig } from './config';
 import { responseForUploadedFile } from './handlers';
 import { createMulterUpload } from './logic';
@@ -14,6 +15,8 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     const { postImagesDestination, profileImagesDestination, serverUrl } =
         config;
     const router = Router();
+    fs.mkdirSync(postImagesDestination, { recursive: true });
+    fs.mkdirSync(profileImagesDestination, { recursive: true });
 
     /**
      * @swagger
@@ -21,14 +24,14 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *   post:
      *     tags:
      *       - Files
-     *     summary: Uploads a prodile image.
-     *       consumes:
-     *         - multipart/form-data
-     *       parameters:
-     *         - in: formData
-     *           name: profileImage
-     *           type: file
-     *           description: profile image to upload.
+     *     summary: Uploads a profile image
+     *     consumes:
+     *       - multipart/form-data
+     *     parameters:
+     *       - in: formData
+     *         name: profileImage
+     *         type: file
+     *         description: profile image to upload.
      *     responses:
      *       200:
      *         description: url for requesting the uploaded image
@@ -36,7 +39,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *           text/plain:
      *             schema:
      *               type: string
-     *               example: https://backend/user/image
+     *               example: http://backend/files/profile-image/image
      *       401:
      *         description: request is unauthorized
      *       500:
@@ -56,7 +59,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *     summary: fetch profile image
      *     description: Returns the requested profile image as a binary file.
      *     tags:
-     *       - User
+     *       - Files
      *     responses:
      *       200:
      *         description: A profile image file
@@ -74,7 +77,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *       500:
      *         description: Server error
      */
-    router.get('/profile-image', express.static(profileImagesDestination));
+    router.use('/profile-image', express.static(profileImagesDestination));
 
     /**
      * @swagger
@@ -82,14 +85,14 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *   post:
      *     tags:
      *       - Files
-     *     summary: Uploads a prodile image.
-     *       consumes:
-     *         - multipart/form-data
-     *       parameters:
-     *         - in: formData
-     *           name: postImage
-     *           type: file
-     *           description: profile image to upload.
+     *     summary: Uploads a post image
+     *     consumes:
+     *       - multipart/form-data
+     *     parameters:
+     *       - in: formData
+     *         name: postImage
+     *         type: file
+     *         description: post image to upload.
      *     responses:
      *       200:
      *         description: url for requesting the uploaded image
@@ -97,7 +100,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *           text/plain:
      *             schema:
      *               type: string
-     *               example: https://backend/post/image
+     *               example: http://backend/files/post-image/image
      *       401:
      *         description: request is unauthorized
      *       500:
@@ -107,7 +110,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     router.post(
         '/post-image',
         uploadPostImage.single('postImage'),
-        responseForUploadedFile(serverUrl , 'files/post-image/')
+        responseForUploadedFile(serverUrl, 'files/post-image/')
     );
 
     /**
@@ -117,7 +120,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *     summary: fetch post image
      *     description: Returns the requested post image as a binary file.
      *     tags:
-     *       - User
+     *       - Files
      *     responses:
      *       200:
      *         description: A post image file
@@ -135,7 +138,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *       500:
      *         description: Server error
      */
-    router.get('/post-image', express.static(postImagesDestination));
+    router.use('/post-image', express.static(postImagesDestination));
 
     return router;
 };
