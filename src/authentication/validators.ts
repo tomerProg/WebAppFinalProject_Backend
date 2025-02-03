@@ -8,3 +8,11 @@ const requestWithUserBodyZodSchema = z.object({
 export const validateRequestWithUserInBody = validateRequest(
     requestWithUserBodyZodSchema
 );
+
+const loginRequestZodSchema = z.object({
+    body: z.object({
+        email: z.string().email(),
+        password: z.string()
+    })
+});
+export const validateLoginRequest = validateRequest(loginRequestZodSchema);

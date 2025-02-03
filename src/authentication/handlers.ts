@@ -9,7 +9,10 @@ import {
 import { UserModel } from '../users/model';
 import { AuthConfig } from './config';
 import { generateTokens, hashPassword, verifyRefreshToken } from './utils';
-import { validateRequestWithUserInBody } from './validators';
+import {
+    validateLoginRequest,
+    validateRequestWithUserInBody
+} from './validators';
 
 export const register = (userModel: UserModel) =>
     validateRequestWithUserInBody(async (request, response) => {
@@ -28,7 +31,7 @@ export const register = (userModel: UserModel) =>
     });
 
 export const login = (authConfig: AuthConfig, userModel: UserModel) =>
-    validateRequestWithUserInBody(async (request, response, next) => {
+    validateLoginRequest(async (request, response, next) => {
         const { email, password } = request.body;
         try {
             const user = await userModel.findOne({ email });
