@@ -5,6 +5,9 @@ import { ChatGeneratorConfig, createChatGeneratorConfig } from '../../openai/con
 
 export type ServerConfig = {
     port: number;
+    domain: string;
+    profileImagesDestination: string;
+    postImagesDestination: string;
     authConfig: AuthConfig;
     chatGeneratorConfig: ChatGeneratorConfig
 };
@@ -13,6 +16,9 @@ export const createServerConfig = (
     env: EnvironmentVariables
 ): ServerConfig => ({
     port: env.PORT,
+    domain: env.SERVICE_DOMAIN,
+    profileImagesDestination: env.PROFILE_IMAGES_DEST,
+    postImagesDestination: env.POST_IMAGES_DEST,
     authConfig: createAuthConfig(env), 
     chatGeneratorConfig: createChatGeneratorConfig(env)
 });

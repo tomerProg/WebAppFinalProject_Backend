@@ -12,6 +12,7 @@ import { AuthConfig } from './config';
 import { generateTokens, hashPassword, verifyRefreshToken } from './utils';
 import {
     validateGoogleLoginRequest,
+    validateLoginRequest,
     validateRefreshTokenRequest,
     validateRequestWithUserInBody
 } from './validators';
@@ -33,7 +34,7 @@ export const register = (userModel: UserModel) =>
     });
 
 export const login = (authConfig: AuthConfig, userModel: UserModel) =>
-    validateRequestWithUserInBody(async (request, response, next) => {
+    validateLoginRequest(async (request, response, next) => {
         const { email, password } = request.body;
         try {
             const user = await userModel.findOne({ email });

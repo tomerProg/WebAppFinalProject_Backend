@@ -5,17 +5,19 @@ import * as http from 'http';
 import swaggerUI from 'swagger-ui-express';
 import { createAuthMiddleware } from '../../authentication/middlewares';
 import { createAuthRouter } from '../../authentication/router';
+import { commentModel } from '../../comments/model';
+import { createCommentsRouter } from '../../comments/router';
+import { createFileRouterConfig } from '../../files/config';
+import { createFilesRouter } from '../../files/router';
+import { ChatGenerator } from '../../openai/openai';
+import { postModel } from '../../posts/model';
+import { createPostsRouter } from '../../posts/router';
 import specs from '../../swagger';
 import { createUsersRouter } from '../../users/router';
 import { Service } from '../service';
 import { ServerConfig } from './config';
 import { ServerDependencies } from './dependencies';
 import { expressAppRoutesErrorHandler } from './utils';
-import { createPostsRouter } from '../../posts/router';
-import { postModel } from '../../posts/model';
-import { createCommentsRouter } from '../../comments/router';
-import { commentModel } from '../../comments/model';
-import { ChatGenerator } from '../../openai/openai';
 
 export class Server extends Service {
     private app: Express;
@@ -42,24 +44,42 @@ export class Server extends Service {
     };
 
     useRouters = () => {
-        const { authConfig } = this.config;
         const { database, googleAuthClient } = this.dependencies;
         const { userModel } = database.getModels();
-        const authMiddleware = createAuthMiddleware(authConfig.tokenSecret);
-        
-        const { chatGeneratorConfig } = this.config
-        const chatGenerator = new ChatGenerator(chatGeneratorConfig)
+        const { filesRouterConfig, authRouterConfig } =
+            this.createRoutersConfigs();
+        const authMiddleware = createAuthMiddleware(
+            authRouterConfig.tokenSecret
+        );
 
-        this.app.use('/auth', createAuthRouter(authConfig, { userModel, googleAuthClient }));
+        const { chatGeneratorConfig } = this.config;
+        const chatGenerator = new ChatGenerator(chatGeneratorConfig);
+
+        this.app.use('/files', createFilesRouter(filesRouterConfig));
+        this.app.use(
+            '/auth',
+            createAuthRouter(authRouterConfig, { userModel, googleAuthClient })
+        );
         this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
-        this.app.use('/post', createPostsRouter(authMiddleware, { postModel, chatGenerator }));
-        this.app.use('/comment', createCommentsRouter(authMiddleware, { commentModel }));
+        this.app.use(
+            '/post',
+            createPostsRouter(authMiddleware, { postModel, chatGenerator })
+        );
+        this.app.use(
+            '/comment',
+            createCommentsRouter(authMiddleware, { commentModel })
+        );
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
     useErrorHandler = () => {
         this.app.use(expressAppRoutesErrorHandler);
     };
+
+    createRoutersConfigs = () => ({
+        filesRouterConfig: createFileRouterConfig(this.config, 'http'),
+        authRouterConfig: this.config.authConfig
+    });
 
     getExpressApp = () => this.app;
 

@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import { BadRequestError, ForbiddenError } from '../services/server/exceptions';
+import { BadRequestError, ForbiddenError, NotFoundError } from '../services/server/exceptions';
 import { PostModel } from './model';
 import { buildPostFilter } from './utils';
 import {
@@ -31,7 +31,7 @@ export const editPost = (postModel: PostModel) =>
         );
 
         if (!modifiedCount || modifiedCount === 0) {
-            throw new BadRequestError('could not edit post');
+            throw new NotFoundError('could not edit post');
         }
         response.sendStatus(StatusCodes.OK);
     });
