@@ -27,11 +27,16 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *     summary: Uploads a profile image
      *     consumes:
      *       - multipart/form-data
-     *     parameters:
-     *       - in: formData
-     *         name: profileImage
-     *         type: file
-     *         description: profile image to upload.
+     *     requestBody:
+     *       content:
+     *         multipart/form-data:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               profileImage:
+     *                 type: string
+     *                 format: binary
+     *                 description: profile image to upload.
      *     responses:
      *       200:
      *         description: url for requesting the uploaded image
@@ -54,12 +59,19 @@ export const createFilesRouter = (config: FileRouterConfig) => {
 
     /**
      * @swagger
-     * /files/profile-image:
+     * /files/profile-image/{path}:
      *   get:
      *     summary: fetch profile image
      *     description: Returns the requested profile image as a binary file.
      *     tags:
      *       - Files
+     *     parameters:
+     *       - in: path
+     *         name: path
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: path to the file in the static folder
      *     responses:
      *       200:
      *         description: A profile image file
@@ -88,11 +100,16 @@ export const createFilesRouter = (config: FileRouterConfig) => {
      *     summary: Uploads a post image
      *     consumes:
      *       - multipart/form-data
-     *     parameters:
-     *       - in: formData
-     *         name: postImage
-     *         type: file
-     *         description: post image to upload.
+     *     requestBody:
+     *       content:
+     *         multipart/form-data:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               postImage:
+     *                 type: string
+     *                 format: binary
+     *                 description: post image to upload.
      *     responses:
      *       200:
      *         description: url for requesting the uploaded image
@@ -115,12 +132,19 @@ export const createFilesRouter = (config: FileRouterConfig) => {
 
     /**
      * @swagger
-     * /files/post-image:
+     * /files/post-image/{path}:
      *   get:
      *     summary: fetch post image
      *     description: Returns the requested post image as a binary file.
      *     tags:
      *       - Files
+     *     parameters:
+     *       - in: path
+     *         name: path
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: path to the file in the static folder
      *     responses:
      *       200:
      *         description: A post image file
