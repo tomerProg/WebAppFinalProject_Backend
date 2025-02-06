@@ -16,3 +16,17 @@ const loginRequestZodSchema = z.object({
     })
 });
 export const validateLoginRequest = validateRequest(loginRequestZodSchema);
+
+const refreshTokenRequestZodSchema = z.object({
+    body: z.object({ refreshToken: z.string() })
+});
+export const validateRefreshTokenRequest = validateRequest(
+    refreshTokenRequestZodSchema
+);
+
+const googleLoginRequestZodSchema = z.object({
+    body: z.object({ credential: z.string() })
+});
+export const validateGoogleLoginRequest = validateRequest(
+    googleLoginRequestZodSchema
+);

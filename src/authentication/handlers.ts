@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { GoogleAuthClient } from '../googleAuth/google.auth';
 import {
     BadRequestError,
     InternalServerError,
@@ -10,7 +11,9 @@ import { UserModel } from '../users/model';
 import { AuthConfig } from './config';
 import { generateTokens, hashPassword, verifyRefreshToken } from './utils';
 import {
+    validateGoogleLoginRequest,
     validateLoginRequest,
+    validateRefreshTokenRequest,
     validateRequestWithUserInBody
 } from './validators';
 
@@ -76,18 +79,18 @@ export const logout =
         }
     };
 
-export const refresh =
-    (authConfig: AuthConfig) => async (req: Request, res: Response) => {
+export const refresh = (authConfig: AuthConfig) =>
+    validateRefreshTokenRequest(async (request, response) => {
+        const { refreshToken } = request.body;
+        const { tokenSecret } = authConfig;
+
         try {
-            const user = await verifyRefreshToken(
-                authConfig.tokenSecret,
-                req.body.refreshToken
-            );
+            const user = await verifyRefreshToken(tokenSecret, refreshToken);
             const userId = user._id.toString();
             const tokens = generateTokens(authConfig, userId);
 
             if (!tokens) {
-                res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+                response.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
                 return;
             }
             if (!user.refreshToken) {
@@ -95,12 +98,49 @@ export const refresh =
             }
             user.refreshToken.push(tokens.refreshToken);
             await user.save();
-            res.send({
+            response.send({
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
                 _id: userId
             });
         } catch (err) {
-            res.status(StatusCodes.BAD_REQUEST).send(err);
+            response.status(StatusCodes.BAD_REQUEST).send(err);
         }
-    };
+    });
+
+export const googleLogin = (
+    authConfig: AuthConfig,
+    userModel: UserModel,
+    googleAuthClient: GoogleAuthClient
+) =>
+    validateGoogleLoginRequest(async (request, response) => {
+        const { credential } = request.body;
+        const googlePayload = await googleAuthClient.verifyCredential(
+            credential
+        );
+        try {
+            const email = googlePayload.email;
+            if (!email) {
+                throw new BadRequestError('error missing email');
+            }
+
+            const unknownExistUser = await userModel.findOne({ email });
+            const user = unknownExistUser
+                ? unknownExistUser
+                : await userModel.create({
+                      email: email,
+                      profileImage: googlePayload.picture,
+                      password: 'google-login',
+                      username: googlePayload.name ?? email
+                  });
+            const userId = user._id.toString();
+            const tokens = await generateTokens(authConfig, userId);
+
+            response.send({ ...tokens, _id: userId });
+        } catch (err) {
+            throw new BadRequestError(
+                'error missing email or password',
+                err as Error
+            );
+        }
+    });

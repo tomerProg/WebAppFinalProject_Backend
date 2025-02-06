@@ -11,6 +11,7 @@ const environmentVariablesZodScema = z.object({
     AUTH_TOKEN_EXPIRES: z.string(),
     AUTH_REFRESH_TOKEN_EXPIRES: z.string(),
     OPENAI_API_KEY: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
     PROFILE_IMAGES_DEST: z.string(),
     POST_IMAGES_DEST: z.string()
 });

@@ -44,7 +44,7 @@ export class Server extends Service {
     };
 
     useRouters = () => {
-        const { database } = this.dependencies;
+        const { database, googleAuthClient } = this.dependencies;
         const { userModel } = database.getModels();
         const { filesRouterConfig, authRouterConfig } =
             this.createRoutersConfigs();
@@ -55,11 +55,11 @@ export class Server extends Service {
         const { chatGeneratorConfig } = this.config;
         const chatGenerator = new ChatGenerator(chatGeneratorConfig);
 
+        this.app.use('/files', createFilesRouter(filesRouterConfig));
         this.app.use(
             '/auth',
-            createAuthRouter(authRouterConfig, { userModel })
+            createAuthRouter(authRouterConfig, { userModel, googleAuthClient })
         );
-        this.app.use('/files', createFilesRouter(filesRouterConfig));
         this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
         this.app.use(
             '/post',
