@@ -1,7 +1,11 @@
 import { EnvironmentVariables } from '../../config';
 
-export type DatabaseConfig = {};
+export type DatabaseConfig = {
+    connection: string,
+};
 
 export const createDatabaseConfig = (
-    _env: EnvironmentVariables
-): DatabaseConfig => ({});
+    env: EnvironmentVariables
+): DatabaseConfig => ({
+    connection: env.DB_CONNECT
+});

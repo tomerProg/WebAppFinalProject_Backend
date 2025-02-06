@@ -11,6 +11,11 @@ import { Service } from '../service';
 import { ServerConfig } from './config';
 import { ServerDependencies } from './dependencies';
 import { expressAppRoutesErrorHandler } from './utils';
+import { createPostsRouter } from '../../posts/router';
+import { postModel } from '../../posts/model';
+import { createCommentsRouter } from '../../comments/router';
+import { commentModel } from '../../comments/model';
+import { ChatGenerator } from '../../openai/openai';
 
 export class Server extends Service {
     private app: Express;
@@ -41,9 +46,14 @@ export class Server extends Service {
         const { database, googleAuthClient } = this.dependencies;
         const { userModel } = database.getModels();
         const authMiddleware = createAuthMiddleware(authConfig.tokenSecret);
+        
+        const { chatGeneratorConfig } = this.config
+        const chatGenerator = new ChatGenerator(chatGeneratorConfig)
 
         this.app.use('/auth', createAuthRouter(authConfig, { userModel, googleAuthClient }));
         this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
+        this.app.use('/post', createPostsRouter(authMiddleware, { postModel, chatGenerator }));
+        this.app.use('/comment', createCommentsRouter(authMiddleware, { commentModel }));
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 

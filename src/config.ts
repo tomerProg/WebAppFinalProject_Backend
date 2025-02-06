@@ -5,10 +5,12 @@ dotenv.config();
 
 const environmentVariablesZodScema = z.object({
     PORT: z.coerce.number(),
+    DB_CONNECT: z.string(),
     AUTH_TOKEN_SECRET: z.string(),
     AUTH_TOKEN_EXPIRES: z.string(),
     AUTH_REFRESH_TOKEN_EXPIRES: z.string(),
-    GOOGLE_CLIENT_ID: z.string()
+    GOOGLE_CLIENT_ID: z.string(),
+    OPENAI_API_KEY: z.string()
 });
 export type EnvironmentVariables = z.infer<typeof environmentVariablesZodScema>;
 
