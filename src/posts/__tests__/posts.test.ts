@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import request from 'supertest';
 import { createTestingAuthMiddlewareWithUser } from '../../authentication/__tests__/utils';
+import { ChatGeneratorConfig } from '../../openai/config';
+import { ChatGenerator } from '../../openai/openai';
 import { createDatabaseConfig } from '../../services/database/config';
 import { Database } from '../../services/database/database';
 import { createTestingAppForRouter } from '../../services/server/__tests__/utils';
@@ -30,10 +32,22 @@ describe('posts route', () => {
         _id: new Types.ObjectId(),
         title: 'Post Title',
         owner: loginUser._id.toString(),
-        description: 'post description'
+        description: 'post description',
+        suggestion: 'suggestion'
     };
 
-    const postsRouter = createPostsRouter(authMiddleware, { postModel });
+    const GENERATED_SUGGESTION = 'generated suggestion';
+    const chatGeneratorConfig: ChatGeneratorConfig = { apiKey: '' };
+    const chatGenerator = new ChatGenerator(chatGeneratorConfig);
+
+    jest.spyOn(chatGenerator, 'getSuggestion').mockResolvedValue(
+        GENERATED_SUGGESTION
+    );
+
+    const postsRouter = createPostsRouter(authMiddleware, {
+        postModel,
+        chatGenerator
+    });
     const app = createTestingAppForRouter('/post', postsRouter);
 
     beforeAll(async () => {
@@ -199,24 +213,26 @@ describe('posts route', () => {
     });
 
     describe('edit post', () => {
-        test('user cannot edit post of other user', async () => {
-            const otherUserId: string = new Types.ObjectId().toString();
-            const otherPost: Post & { _id: Types.ObjectId } = {
-                _id: new Types.ObjectId(),
-                title: 'Other Title',
-                owner: otherUserId,
-                description: 'other description'
-            };
-            await postModel.create(otherPost);
-
+        test('user can edit his post', async () => {
             const updatedPostTitle = 'new title';
-
+            const updatedDescription = 'new description';
             const response = await request(app)
-                .put(`/post/${otherPost._id}`)
+                .put(`/post/${testPost._id}`)
                 .send({
-                    title: updatedPostTitle
+                    title: updatedPostTitle,
+                    description: updatedDescription
                 });
-            expect(response.status).toBe(StatusCodes.FORBIDDEN);
+            expect(response.status).toBe(StatusCodes.OK);
+
+            const afterUpdateTestUser = await postModel
+                .findById(testPost._id)
+                .lean();
+
+            expect(afterUpdateTestUser?.title).toStrictEqual(updatedPostTitle);
+            expect(afterUpdateTestUser?.owner).toStrictEqual(testPost.owner);
+            expect(afterUpdateTestUser?.description).toStrictEqual(
+                updatedDescription
+            );
         });
 
         test('edit post with not editable field should edit only the valid fields', async () => {
@@ -244,18 +260,46 @@ describe('posts route', () => {
             );
         });
 
+        test('user cannot edit post of other user', async () => {
+            const otherUserId: string = new Types.ObjectId().toString();
+            const otherPost: Post & { _id: Types.ObjectId } = {
+                _id: new Types.ObjectId(),
+                title: 'Other Title',
+                owner: otherUserId,
+                description: 'other description'
+            };
+            await postModel.create(otherPost);
+
+            const updatedPostTitle = 'new title';
+
+            const response = await request(app)
+                .put(`/post/${otherPost._id}`)
+                .send({
+                    title: updatedPostTitle
+                });
+            expect(response.status).toBe(StatusCodes.FORBIDDEN);
+        });
+
         test('edit not existing post should return BAD_REQUEST', async () => {
             await postModel.deleteOne({ _id: testPost._id });
             const updatedPostTitle = 'new title';
             const response = await request(app)
-                .put(`/post/${testPost._id}`)
-                .send({
-                    title: updatedPostTitle,
-                    owner: testPost.owner,
-                    description: testPost.description
-                });
+                .post('/post')
+                .send({ ...testPost });
 
-            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(response.body).not.toBeNull();
+            expect(response.body?.owner).toStrictEqual(
+                loginUser._id.toString()
+            );
+            expect(response.body?.title).toStrictEqual(testPost.title);
+            expect(response.body?.description).toStrictEqual(
+                testPost.description
+            );
+            expect(response.body?.suggestion).toStrictEqual(
+                testPost.suggestion
+            );
+            expect(response.body?.imageSrc).toStrictEqual(testPost.imageSrc);
         });
     });
 
@@ -289,14 +333,48 @@ describe('posts route', () => {
                     owner: otherUserId
                 });
 
-            const createdPost = await postModel
-                .findOne({ owner: loginUser._id })
-                .lean();
-            const { _id, ...testPostWithoutId } = testPost;
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(response.body).not.toBeNull();
+            expect(response.body?.owner).toStrictEqual(
+                loginUser._id.toString()
+            );
+            expect(response.body?.title).toStrictEqual(testPost.title);
+            expect(response.body?.description).toStrictEqual(
+                testPost.description
+            );
+            expect(response.body?.suggestion).toStrictEqual(
+                testPost.suggestion
+            );
+            expect(response.body?.imageSrc).toStrictEqual(testPost.imageSrc);
+        });
+
+        test('suggestion is generated if the user does not give one', async () => {
+            const postWithoutSuggestion: Post = {
+                title: 'Replacing light bulb',
+                owner: loginUser._id.toString(),
+                description: 'Replacing old light bulb with a new one'
+            };
+            const response = await request(app)
+                .post('/post')
+                .send(postWithoutSuggestion);
 
             expect(response.status).toBe(StatusCodes.OK);
-            expect(createdPost).toStrictEqual(
-                expect.objectContaining(testPostWithoutId)
+            expect(response.body).not.toBeNull();
+            expect(response.body?.suggestion).toStrictEqual(
+                GENERATED_SUGGESTION
+            );
+
+            expect(response.body?.owner).toStrictEqual(
+                loginUser._id.toString()
+            );
+            expect(response.body?.title).toStrictEqual(
+                postWithoutSuggestion.title
+            );
+            expect(response.body?.description).toStrictEqual(
+                postWithoutSuggestion.description
+            );
+            expect(response.body?.imageSrc).toStrictEqual(
+                postWithoutSuggestion.imageSrc
             );
         });
 

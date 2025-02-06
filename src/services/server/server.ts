@@ -5,8 +5,11 @@ import * as http from 'http';
 import swaggerUI from 'swagger-ui-express';
 import { createAuthMiddleware } from '../../authentication/middlewares';
 import { createAuthRouter } from '../../authentication/router';
+import { commentModel } from '../../comments/model';
+import { createCommentsRouter } from '../../comments/router';
 import { createFileRouterConfig } from '../../files/config';
 import { createFilesRouter } from '../../files/router';
+import { ChatGenerator } from '../../openai/openai';
 import { postModel } from '../../posts/model';
 import { createPostsRouter } from '../../posts/router';
 import specs from '../../swagger';
@@ -49,13 +52,23 @@ export class Server extends Service {
             authRouterConfig.tokenSecret
         );
 
+        const { chatGeneratorConfig } = this.config;
+        const chatGenerator = new ChatGenerator(chatGeneratorConfig);
+
         this.app.use(
             '/auth',
             createAuthRouter(authRouterConfig, { userModel })
         );
         this.app.use('/files', createFilesRouter(filesRouterConfig));
         this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
-        this.app.use('/post', createPostsRouter(authMiddleware, { postModel }));
+        this.app.use(
+            '/post',
+            createPostsRouter(authMiddleware, { postModel, chatGenerator })
+        );
+        this.app.use(
+            '/comment',
+            createCommentsRouter(authMiddleware, { commentModel })
+        );
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
