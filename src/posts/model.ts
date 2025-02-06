@@ -1,12 +1,13 @@
-import { Model, Schema, Types, model } from 'mongoose';
+import { Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
 
-export interface Post { 
-    title: string, 
-    owner: string, 
-    description: string, 
-    suggestion?: string, 
-    imageSrc?: string }
+export interface Post {
+    title: string;
+    owner: string;
+    description: string;
+    suggestion?: string;
+    imageSrc?: string;
+}
 
 export const postZodSchema: z.ZodType<Post> = z.object({
     title: z.string(),

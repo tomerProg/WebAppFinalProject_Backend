@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, ForbiddenError } from '../services/server/exceptions';
-import { PostModel} from './model';
+import { PostModel } from './model';
 import { buildPostFilter } from './utils';
 import {
     validateCreatePostRequest,
@@ -36,14 +36,17 @@ export const editPost = (postModel: PostModel) =>
         response.sendStatus(StatusCodes.OK);
     });
 
-
-export const createPost = (postModel: PostModel, chatGenerator: ChatGenerator) =>
+export const createPost = (
+    postModel: PostModel,
+    chatGenerator: ChatGenerator
+) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
         const postToCreate = request.body;
-        const suggestion = postToCreate?.suggestion ? postToCreate.suggestion : 
-            await chatGenerator.getSuggestion(postToCreate.description); 
-        
+        const suggestion = postToCreate.suggestion
+            ? postToCreate.suggestion
+            : await chatGenerator.getSuggestion(postToCreate.description);
+
         const createdPost = await postModel.create({
             ...postToCreate,
             owner: user,

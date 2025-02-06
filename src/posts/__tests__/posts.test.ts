@@ -192,6 +192,7 @@ describe('posts route', () => {
             expect(afterUpdateTestUser?.owner).toStrictEqual(testPost.owner);
             expect(afterUpdateTestUser?.description).toStrictEqual(updatedDescription);    
         });
+
         test('edit post with not editable field should edit only the valid fields', async () => {
             const updatedPostTitle = 'new title';
             const updatedDescription = 'new description'
@@ -231,9 +232,7 @@ describe('posts route', () => {
             expect(response.status).toBe(StatusCodes.FORBIDDEN);
             
         });
-    
-        
-    
+
         test('edit not existing post should return BAD_REQUEST', async () => {
             await postModel.deleteOne({ _id: testPost._id });
             const updatedPostTitle = 'new title';
@@ -252,7 +251,7 @@ describe('posts route', () => {
             await postModel.deleteOne({ _id: testPost._id });
             
             const response = await request(app)
-            .post('/post').send({...testPost})
+                .post('/post').send({...testPost})
     
             expect(response.status).toBe(StatusCodes.OK);
             expect(response.body).not.toBeNull();
@@ -287,10 +286,8 @@ describe('posts route', () => {
                 owner: loginUser._id.toString(),  
                 description: 'Replacing old light bulb with a new one'
             }
-            const response = await request(app).post('/post').send({
-                ...postWithoutSuggestion,
-                owner: loginUser._id.toString(),
-            })
+            const response = await request(app).post('/post')
+                .send(postWithoutSuggestion)
         
             expect(response.status).toBe(StatusCodes.OK);
             expect(response.body).not.toBeNull();
@@ -302,7 +299,6 @@ describe('posts route', () => {
             expect(response.body?.imageSrc).toStrictEqual(postWithoutSuggestion.imageSrc);
         });
 
-    
         test('user cannot create post without required fields', async () => {
             await postModel.deleteOne({ _id: testPost._id });
     
