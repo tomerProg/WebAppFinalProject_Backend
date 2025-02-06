@@ -9,6 +9,7 @@ import {
     validateGetPostByIdRequest,
     validateGetPostRequest
 } from './validators';
+import { ChatGenerator } from '../openai/openai';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
@@ -35,12 +36,21 @@ export const editPost = (postModel: PostModel) =>
         response.sendStatus(StatusCodes.OK);
     });
 
-export const createPost = (postModel: PostModel) =>
+export const createPost = (
+    postModel: PostModel,
+    chatGenerator: ChatGenerator
+) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
+        const postToCreate = request.body;
+        const suggestion = postToCreate.suggestion
+            ? postToCreate.suggestion
+            : await chatGenerator.getSuggestion(postToCreate.description);
+
         const createdPost = await postModel.create({
-            ...request.body,
-            owner: user
+            ...postToCreate,
+            owner: user,
+            suggestion: suggestion
         });
 
         if (!createdPost) {
