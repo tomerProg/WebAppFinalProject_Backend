@@ -284,6 +284,22 @@ describe('posts route', () => {
             await postModel.deleteOne({ _id: testPost._id });
             const updatedPostTitle = 'new title';
             const response = await request(app)
+                .put(`/post/${testPost._id}`)
+                .send({
+                    title: updatedPostTitle,
+                    owner: testPost.owner,
+                    description: testPost.description
+                });
+
+            expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });
+    });
+
+    describe('create post', () => {
+        test('user creates a post', async () => {
+            await postModel.deleteOne({ _id: testPost._id });
+
+            const response = await request(app)
                 .post('/post')
                 .send({ ...testPost });
 
@@ -300,26 +316,6 @@ describe('posts route', () => {
                 testPost.suggestion
             );
             expect(response.body?.imageSrc).toStrictEqual(testPost.imageSrc);
-        });
-    });
-
-    describe('create post', () => {
-        test('user creates a post', async () => {
-            await postModel.deleteOne({ _id: testPost._id });
-
-            const response = await request(app)
-                .post('/post')
-                .send({ ...testPost });
-
-            const posts = await postModel.find().lean();
-            const { _id, ...testPostWithoutId } = testPost;
-
-            expect(response.status).toBe(StatusCodes.OK);
-            expect(posts).toStrictEqual(
-                expect.arrayContaining([
-                    expect.objectContaining(testPostWithoutId)
-                ])
-            );
         });
 
         test('enforce the user who created the post to be the owner of the post', async () => {
@@ -422,6 +418,60 @@ describe('posts route', () => {
             const response = await request(app).delete(`/post/${testPost._id}`);
 
             expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        });
+    });
+
+    describe('like post', () => {
+        test('like post should add logged user to likes array', async () => {
+            const response = await request(app)
+                .put(`/post/like/${testPost._id}`)
+                .send({ like: true });
+            expect(response.status).toBe(StatusCodes.OK);
+
+            const post = await postModel.findById(testPost._id).lean();
+            expect(post?.likes).toStrictEqual([loginUser._id.toString()]);
+        });
+
+        test('dislike post should add logged user to dislikes array', async () => {
+            const response = await request(app)
+                .put(`/post/like/${testPost._id}`)
+                .send({ like: false });
+            expect(response.status).toBe(StatusCodes.OK);
+
+            const post = await postModel.findById(testPost._id).lean();
+            expect(post?.dislikes).toStrictEqual([loginUser._id.toString()]);
+        });
+
+        test('undefined like post should remove logged user from likes array', async () => {
+            await postModel.updateOne(
+                { _id: testPost._id },
+                { $addToSet: { likes: loginUser._id.toString() } }
+            );
+            const response = await request(app).put(
+                `/post/like/${testPost._id}`
+            );
+            expect(response.status).toBe(StatusCodes.OK);
+
+            const post = await postModel.findById(testPost._id).lean();
+            expect(post?.likes).not.toStrictEqual(
+                expect.arrayContaining([loginUser._id.toString()])
+            );
+        });
+
+        test('undefined like post should remove logged user from dislikes array', async () => {
+            await postModel.updateOne(
+                { _id: testPost._id },
+                { $addToSet: { dislikes: loginUser._id.toString() } }
+            );
+            const response = await request(app).put(
+                `/post/like/${testPost._id}`
+            );
+            expect(response.status).toBe(StatusCodes.OK);
+
+            const post = await postModel.findById(testPost._id).lean();
+            expect(post?.dislikes).not.toStrictEqual(
+                expect.arrayContaining([loginUser._id.toString()])
+            );
         });
     });
 });

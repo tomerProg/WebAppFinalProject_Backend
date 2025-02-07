@@ -88,7 +88,7 @@ describe('users route', () => {
         expect(afterUpdateTestUser?.password).toStrictEqual(testUser.password);
     });
 
-    test('edit not existing user should return BAD_REQUEST', async () => {
+    test('edit not existing user should return NotFound', async () => {
         await userModel.deleteOne({ _id: testUser._id });
         const updatedUsername = 'new nick';
         const response = await request(app).put('/user').send({
@@ -97,6 +97,6 @@ describe('users route', () => {
             username: updatedUsername
         });
 
-        expect(response.status).toBe(StatusCodes.BAD_REQUEST);
+        expect(response.status).toBe(StatusCodes.NOT_FOUND);
     });
 });

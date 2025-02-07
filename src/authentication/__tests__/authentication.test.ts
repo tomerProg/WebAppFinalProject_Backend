@@ -239,7 +239,7 @@ describe('authentication tests', () => {
         }, 10_000);
     });
 
-    describe.only('google auth', () => {
+    describe('google auth', () => {
         googleAuthClientMock.verifyCredential.mockResolvedValue({
             email: testUser.email
         });
@@ -252,7 +252,7 @@ describe('authentication tests', () => {
             const response = await request(app)
                 .post(routeInAuthRouter('/google-login'))
                 .send({
-                    cardentials: 'someCardentials'
+                    credential: 'someCredential'
                 });
             const userAfter = await userModel.findOne({
                 email: testUser.email
@@ -271,7 +271,7 @@ describe('authentication tests', () => {
             const response = await request(app)
                 .post(routeInAuthRouter('/google-login'))
                 .send({
-                    cardentials: 'someCardentials'
+                    credential: 'someCredential'
                 });
             expect(response.status).toBe(StatusCodes.OK);
             const { accessToken, refreshToken } = response.body;
