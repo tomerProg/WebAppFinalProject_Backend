@@ -14,8 +14,10 @@ export const expressAppRoutesErrorHandler = (
     _next: NextFunction
 ) => {
     if (error instanceof ServerRequestError) {
+        console.error('server request error: ', error.cause);
         response.status(error.status).send(error.message);
     } else {
+        console.error('unknown error: ', error);
         response.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
     }
 };

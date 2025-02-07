@@ -11,6 +11,7 @@ import {
     validateGetPostRequest,
     validateLikePostRequest
 } from './validators';
+import { ChatGenerator } from '../openai/openai';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
@@ -32,17 +33,26 @@ export const editPost = (postModel: PostModel) =>
         );
 
         if (!modifiedCount || modifiedCount === 0) {
-            throw new BadRequestError('could not edit post');
+            throw new NotFoundError('could not edit post');
         }
         response.sendStatus(StatusCodes.OK);
     });
 
-export const createPost = (postModel: PostModel) =>
+export const createPost = (
+    postModel: PostModel,
+    chatGenerator: ChatGenerator
+) =>
     validateCreatePostRequest(async (request, response) => {
         const { id: user } = request.user;
+        const postToCreate = request.body;
+        const suggestion = postToCreate.suggestion
+            ? postToCreate.suggestion
+            : await chatGenerator.getSuggestion(postToCreate.description);
+
         const createdPost = await postModel.create({
-            ...request.body,
-            owner: user
+            ...postToCreate,
+            owner: user,
+            suggestion: suggestion
         });
 
         if (!createdPost) {

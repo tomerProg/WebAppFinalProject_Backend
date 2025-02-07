@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import request from 'supertest';
 import { createTestingAuthMiddlewareWithUser } from '../../authentication/__tests__/utils';
+import { ChatGeneratorConfig } from '../../openai/config';
+import { ChatGenerator } from '../../openai/openai';
 import { createDatabaseConfig } from '../../services/database/config';
 import { Database } from '../../services/database/database';
 import { createTestingAppForRouter } from '../../services/server/__tests__/utils';
@@ -30,10 +32,22 @@ describe('posts route', () => {
         _id: new Types.ObjectId(),
         title: 'Post Title',
         owner: loginUser._id.toString(),
-        description: 'post description'
+        description: 'post description',
+        suggestion: 'suggestion'
     };
 
-    const postsRouter = createPostsRouter(authMiddleware, { postModel });
+    const GENERATED_SUGGESTION = 'generated suggestion';
+    const chatGeneratorConfig: ChatGeneratorConfig = { apiKey: '' };
+    const chatGenerator = new ChatGenerator(chatGeneratorConfig);
+
+    jest.spyOn(chatGenerator, 'getSuggestion').mockResolvedValue(
+        GENERATED_SUGGESTION
+    );
+
+    const postsRouter = createPostsRouter(authMiddleware, {
+        postModel,
+        chatGenerator
+    });
     const app = createTestingAppForRouter('/post', postsRouter);
 
     beforeAll(async () => {
@@ -220,6 +234,7 @@ describe('posts route', () => {
                 updatedDescription
             );
         });
+
         test('edit post with not editable field should edit only the valid fields', async () => {
             const updatedPostTitle = 'new title';
             const updatedDescription = 'new description';
@@ -314,8 +329,6 @@ describe('posts route', () => {
                     owner: otherUserId
                 });
 
-            const createdPost = await postModel.findById(testPost._id).lean();
-
             expect(response.status).toBe(StatusCodes.OK);
             expect(response.body).not.toBeNull();
             expect(response.body?.owner).toStrictEqual(
@@ -329,6 +342,36 @@ describe('posts route', () => {
                 testPost.suggestion
             );
             expect(response.body?.imageSrc).toStrictEqual(testPost.imageSrc);
+        });
+
+        test('suggestion is generated if the user does not give one', async () => {
+            const postWithoutSuggestion: Post = {
+                title: 'Replacing light bulb',
+                owner: loginUser._id.toString(),
+                description: 'Replacing old light bulb with a new one'
+            };
+            const response = await request(app)
+                .post('/post')
+                .send(postWithoutSuggestion);
+
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(response.body).not.toBeNull();
+            expect(response.body?.suggestion).toStrictEqual(
+                GENERATED_SUGGESTION
+            );
+
+            expect(response.body?.owner).toStrictEqual(
+                loginUser._id.toString()
+            );
+            expect(response.body?.title).toStrictEqual(
+                postWithoutSuggestion.title
+            );
+            expect(response.body?.description).toStrictEqual(
+                postWithoutSuggestion.description
+            );
+            expect(response.body?.imageSrc).toStrictEqual(
+                postWithoutSuggestion.imageSrc
+            );
         });
 
         test('user cannot create post without required fields', async () => {

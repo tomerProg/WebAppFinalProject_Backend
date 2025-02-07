@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import request from 'supertest';
+import { GoogleAuthClient } from '../../googleAuth/google.auth';
 import { createDatabaseConfig } from '../../services/database/config';
 import { Database } from '../../services/database/database';
 import { createTestingAppForRouter } from '../../services/server/__tests__/utils';
@@ -15,7 +16,13 @@ describe('authentication tests', () => {
     const authConfig = createAuthConfig(env);
     const database = new Database(createDatabaseConfig(env));
     const { userModel } = database.getModels();
-    const authRouter = createAuthRouter(createAuthConfig(env), { userModel });
+    const googleAuthClientMock = {
+        verifyCredential: jest.fn()
+    } satisfies Record<keyof GoogleAuthClient, jest.Mock>;
+    const authRouter = createAuthRouter(createAuthConfig(env), {
+        userModel,
+        googleAuthClient: googleAuthClientMock as any
+    });
     const app = createTestingAppForRouter('/auth', authRouter);
     const testAuthenticatedRoute = '/authTestRoute';
     app.get(
@@ -230,5 +237,50 @@ describe('authentication tests', () => {
                 StatusCodes.OK
             );
         }, 10_000);
+    });
+
+    describe('google auth', () => {
+        googleAuthClientMock.verifyCredential.mockResolvedValue({
+            email: testUser.email
+        });
+
+        test('first time user login should create user', async () => {
+            await userModel.deleteMany();
+            const userBefore = await userModel.findOne({
+                email: testUser.email
+            });
+            const response = await request(app)
+                .post(routeInAuthRouter('/google-login'))
+                .send({
+                    credential: 'someCredential'
+                });
+            const userAfter = await userModel.findOne({
+                email: testUser.email
+            });
+
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(userBefore).toBeNull();
+            expect(userAfter).toBeDefined();
+            expect(response.body._id).toStrictEqual(userAfter?._id.toString());
+        });
+
+        test('first time user login should create user', async () => {
+            const userBefore = await userModel.findOne({
+                email: testUser.email
+            });
+            const response = await request(app)
+                .post(routeInAuthRouter('/google-login'))
+                .send({
+                    credential: 'someCredential'
+                });
+            expect(response.status).toBe(StatusCodes.OK);
+            const { accessToken, refreshToken } = response.body;
+
+            expect(accessToken).toBeDefined();
+            expect(refreshToken).toBeDefined();
+            expect(response.body._id).toBeDefined();
+            expect(userBefore).toBeDefined();
+            expect(response.body._id).toStrictEqual(userBefore?._id.toString());
+        });
     });
 });
