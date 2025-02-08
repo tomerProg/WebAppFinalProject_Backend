@@ -1,4 +1,5 @@
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import * as http from 'http';
@@ -17,7 +18,7 @@ import { createUsersRouter } from '../../users/router';
 import { Service } from '../service';
 import { ServerConfig } from './config';
 import { ServerDependencies } from './dependencies';
-import { expressAppRoutesErrorHandler } from './utils';
+import { createExpressAppRoutesErrorHandler } from './utils';
 
 export class Server extends Service {
     private app: Express;
@@ -39,6 +40,7 @@ export class Server extends Service {
 
     useMiddlewares = () => {
         this.app.use(bodyParser.json());
+        this.app.use(cookieParser());
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(cors());
     };
@@ -73,7 +75,7 @@ export class Server extends Service {
     };
 
     useErrorHandler = () => {
-        this.app.use(expressAppRoutesErrorHandler);
+        this.app.use(createExpressAppRoutesErrorHandler());
     };
 
     createRoutersConfigs = () => ({
