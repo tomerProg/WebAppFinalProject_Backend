@@ -6,10 +6,11 @@ import { Database } from '../../services/database/database';
 import { createTestingAppForRouter } from '../../services/server/__tests__/utils';
 import { User } from '../../users/model';
 import { createTestEnv } from '../../utils/tests';
-import { createAuthConfig } from '../config';
+import { createAuthConfig, REFRESH_TOKEN_COOKIE_NAME } from '../config';
 import { createAuthMiddleware } from '../middlewares';
 import { createAuthRouter } from '../router';
 import { generateTokens, hashPassword } from '../utils';
+import { extractRefreshTokenFromResponseHeader } from './utils';
 
 describe('authentication tests', () => {
     const env = createTestEnv({ AUTH_TOKEN_EXPIRES: '3s' });
@@ -116,27 +117,28 @@ describe('authentication tests', () => {
     describe('login', () => {
         test('user login should return tokens', async () => {
             const response = await loginUser(testUser);
-            const { accessToken, refreshToken } = response.body;
+            const { accessToken } = response.body;
 
-            expect(accessToken).toBeDefined();
-            expect(refreshToken).toBeDefined();
             expect(response.body._id).toBeDefined();
+            expect(accessToken).toBeDefined();
+            expect(response.headers['set-cookie']).toStrictEqual(
+                expect.arrayContaining([
+                    expect.stringContaining(REFRESH_TOKEN_COOKIE_NAME)
+                ])
+            );
         });
 
         test('login should return different tokens for each login', async () => {
             const firstLogin = await loginUser(testUser);
             const secondLogin = await loginUser(testUser);
 
-            const {
-                accessToken: firstLoginAccesToken,
-                refreshToken: firstLoginRefreshToken
-            } = firstLogin.body;
-            const {
-                accessToken: secondLoginAccesToken,
-                refreshToken: secondLoginRefreshToken
-            } = secondLogin.body;
+            const { accessToken: firstLoginAccesToken } = firstLogin.body;
+            const { accessToken: secondLoginAccesToken } = secondLogin.body;
+
             expect(firstLoginAccesToken).not.toBe(secondLoginAccesToken);
-            expect(firstLoginRefreshToken).not.toBe(secondLoginRefreshToken);
+            expect(firstLogin.headers['set-cookie']).not.toStrictEqual(
+                secondLogin.headers['set-cookie']
+            );
         });
 
         test('incorrect password should return BAD_REQUEST', async () => {
@@ -163,20 +165,24 @@ describe('authentication tests', () => {
     });
 
     describe('logout', () => {
-        test('logout should remove all user refresh tokens', async () => {
-            const loginResponse = await loginUser(testUser);
-            expect(loginResponse.statusCode).toBe(StatusCodes.OK);
-            const { refreshToken, _id: userId } = loginResponse.body;
+        test(
+            'logout should remove all user refresh tokens',
+            async () => {
+                const loginResponse = await loginUser(testUser);
+                expect(loginResponse.statusCode).toBe(StatusCodes.OK);
+                const { _id: userId } = loginResponse.body;
 
-            const logoutResponse = await request(app)
-                .post(routeInAuthRouter('/logout'))
-                .send({ refreshToken });
-            expect(logoutResponse.statusCode).toBe(StatusCodes.OK);
+                const logoutResponse = await request(app)
+                    .post(routeInAuthRouter('/logout'))
+                    .set('Cookie', loginResponse.headers['set-cookie']);
+                expect(logoutResponse.statusCode).toBe(StatusCodes.OK);
 
-            const user = await userModel.findById(userId);
-            expect(user).toBeDefined();
-            expect(user!.refreshToken?.length).toBe(0);
-        });
+                const user = await userModel.findById(userId);
+                expect(user).toBeDefined();
+                expect(user!.refreshToken?.length).toBe(0);
+            },
+            10 * 60_000
+        );
     });
 
     describe('refresh token', () => {
@@ -189,7 +195,7 @@ describe('authentication tests', () => {
 
             const refreshResponse = await request(app)
                 .post(routeInAuthRouter('/refresh'))
-                .send({ refreshToken });
+                .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${refreshToken}`);
 
             const user = await userModel.findById(userId);
             expect(refreshResponse.status).toBe(StatusCodes.BAD_REQUEST);
@@ -198,10 +204,13 @@ describe('authentication tests', () => {
 
         test('refresh should insert new refresh token to user', async () => {
             const loginResponse = await loginUser(testUser);
-            const { _id: userId, refreshToken } = loginResponse.body;
+            const { _id: userId } = loginResponse.body;
+            const refreshToken =
+                extractRefreshTokenFromResponseHeader(loginResponse);
+
             const refreshResponse = await request(app)
                 .post(routeInAuthRouter('/refresh'))
-                .send({ refreshToken });
+                .set('Cookie', loginResponse.headers['set-cookie']);
 
             const user = await userModel.findById(userId);
             expect(refreshResponse.status).toBe(StatusCodes.OK);
@@ -216,7 +225,7 @@ describe('authentication tests', () => {
 
         test('refresh expired token should return valid token', async () => {
             const loginResponse = await loginUser(testUser);
-            const { refreshToken, accessToken } = loginResponse.body;
+            const { accessToken } = loginResponse.body;
             // wait for the token to expire
             await new Promise((resolve) => setTimeout(resolve, 5_000));
 
@@ -227,7 +236,8 @@ describe('authentication tests', () => {
 
             const refreshResponse = await request(app)
                 .post(routeInAuthRouter('/refresh'))
-                .send({ refreshToken });
+                .set('Cookie', loginResponse.headers['set-cookie']);
+
             expect(refreshResponse.status).toBe(StatusCodes.OK);
             const newAccessToken = refreshResponse.body.accessToken;
 
@@ -239,7 +249,7 @@ describe('authentication tests', () => {
         }, 10_000);
     });
 
-    describe.only('google auth', () => {
+    describe('google auth', () => {
         googleAuthClientMock.verifyCredential.mockResolvedValue({
             email: testUser.email
         });
@@ -252,7 +262,7 @@ describe('authentication tests', () => {
             const response = await request(app)
                 .post(routeInAuthRouter('/google-login'))
                 .send({
-                    cardentials: 'someCardentials'
+                    credential: 'someCredential'
                 });
             const userAfter = await userModel.findOne({
                 email: testUser.email
@@ -271,13 +281,17 @@ describe('authentication tests', () => {
             const response = await request(app)
                 .post(routeInAuthRouter('/google-login'))
                 .send({
-                    cardentials: 'someCardentials'
+                    credential: 'someCredential'
                 });
             expect(response.status).toBe(StatusCodes.OK);
-            const { accessToken, refreshToken } = response.body;
+            const { accessToken } = response.body;
 
             expect(accessToken).toBeDefined();
-            expect(refreshToken).toBeDefined();
+            expect(response.headers['set-cookie']).toStrictEqual(
+                expect.arrayContaining([
+                    expect.stringContaining(REFRESH_TOKEN_COOKIE_NAME)
+                ])
+            );
             expect(response.body._id).toBeDefined();
             expect(userBefore).toBeDefined();
             expect(response.body._id).toStrictEqual(userBefore?._id.toString());

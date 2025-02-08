@@ -1,7 +1,7 @@
 import { Express, NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
-import request from 'supertest';
+import request, { Response as SuperTestResponse } from 'supertest';
 import { User } from '../../users/model';
 import { AuthenticatedRequest } from '../types';
 
@@ -34,3 +34,9 @@ export const createTestingAuthMiddlewareWithUser =
         };
         next();
     };
+
+export const extractRefreshTokenFromResponseHeader = (
+    response: SuperTestResponse
+): string =>
+    /[^;]+=(?<refreshToken>[^;]+);/.exec(response.headers['set-cookie'][0])!
+        .groups!.refreshToken;
