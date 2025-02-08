@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { validateRequest } from '../services/server/utils';
 import { userZodSchema } from '../users/model';
+import { REFRESH_TOKEN_COOKIE_NAME } from './config';
 
 const requestWithUserBodyZodSchema = z.object({
     body: userZodSchema
@@ -8,6 +9,14 @@ const requestWithUserBodyZodSchema = z.object({
 export const validateRequestWithUserInBody = validateRequest(
     requestWithUserBodyZodSchema
 );
+
+export const requestWithRefreshTokenCookie = z.object({
+    cookies: z
+        .object({
+            [REFRESH_TOKEN_COOKIE_NAME]: z.string()
+        })
+        .partial()
+});
 
 const loginRequestZodSchema = z.object({
     body: z.object({
@@ -17,11 +26,11 @@ const loginRequestZodSchema = z.object({
 });
 export const validateLoginRequest = validateRequest(loginRequestZodSchema);
 
-const refreshTokenRequestZodSchema = z.object({
-    body: z.object({ refreshToken: z.string() })
-});
-export const validateRefreshTokenRequest = validateRequest(
-    refreshTokenRequestZodSchema
+// const refreshTokenRequestZodSchema = z.object({
+//     body: z.object({ refreshToken: z.string() })
+// });
+export const validateRequestWithRefreshToken = validateRequest(
+    requestWithRefreshTokenCookie
 );
 
 const googleLoginRequestZodSchema = z.object({

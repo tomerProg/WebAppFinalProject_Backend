@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 import { GoogleAuthClient } from '../googleAuth/google.auth';
 import {
     BadRequestError,
@@ -8,14 +9,26 @@ import {
     ServerRequestError
 } from '../services/server/exceptions';
 import { UserModel } from '../users/model';
-import { AuthConfig } from './config';
+import { AuthConfig, REFRESH_TOKEN_COOKIE_NAME } from './config';
+import { Tokens } from './types';
 import { generateTokens, hashPassword, verifyRefreshToken } from './utils';
 import {
     validateGoogleLoginRequest,
     validateLoginRequest,
-    validateRefreshTokenRequest,
+    validateRequestWithRefreshToken,
     validateRequestWithUserInBody
 } from './validators';
+
+const responseSendTokensAndUserId = (
+    response: Response,
+    userId: string | Types.ObjectId,
+    tokens: Tokens
+) => {
+    response.cookie(REFRESH_TOKEN_COOKIE_NAME, tokens.refreshToken, {
+        httpOnly: true
+    });
+    response.send({ accessToken: tokens.accessToken, _id: userId });
+};
 
 export const register = (userModel: UserModel) =>
     validateRequestWithUserInBody(async (request, response) => {
@@ -55,7 +68,7 @@ export const login = (authConfig: AuthConfig, userModel: UserModel) =>
             }
             user.refreshToken.push(tokens.refreshToken);
             await user.save();
-            response.send({ ...tokens, _id: userId });
+            responseSendTokensAndUserId(response, userId, tokens);
         } catch (err) {
             next(
                 err instanceof ServerRequestError
@@ -65,24 +78,22 @@ export const login = (authConfig: AuthConfig, userModel: UserModel) =>
         }
     });
 
-export const logout =
-    (tokenSecret: string) => async (req: Request, res: Response) => {
+export const logout = (tokenSecret: string) =>
+    validateRequestWithRefreshToken(async (request, response) => {
         try {
-            const user = await verifyRefreshToken(
-                tokenSecret,
-                req.body.refreshToken
-            );
+            const refreshToken = request.cookies[REFRESH_TOKEN_COOKIE_NAME];
+            const user = await verifyRefreshToken(tokenSecret, refreshToken);
             await user.save();
-            res.sendStatus(StatusCodes.OK);
+            response.sendStatus(StatusCodes.OK);
         } catch (err) {
-            res.status(StatusCodes.BAD_REQUEST).send(err);
+            response.status(StatusCodes.BAD_REQUEST).send(err);
         }
-    };
+    });
 
 export const refresh = (authConfig: AuthConfig) =>
-    validateRefreshTokenRequest(async (request, response) => {
-        const { refreshToken } = request.body;
+    validateRequestWithRefreshToken(async (request, response) => {
         const { tokenSecret } = authConfig;
+        const refreshToken = request.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
         try {
             const user = await verifyRefreshToken(tokenSecret, refreshToken);
@@ -98,11 +109,7 @@ export const refresh = (authConfig: AuthConfig) =>
             }
             user.refreshToken.push(tokens.refreshToken);
             await user.save();
-            response.send({
-                accessToken: tokens.accessToken,
-                refreshToken: tokens.refreshToken,
-                _id: userId
-            });
+            responseSendTokensAndUserId(response, userId, tokens);
         } catch (err) {
             response.status(StatusCodes.BAD_REQUEST).send(err);
         }
@@ -135,12 +142,17 @@ export const googleLogin = (
                   });
             const userId = user._id.toString();
             const tokens = await generateTokens(authConfig, userId);
+            if (!tokens) {
+                throw new InternalServerError('unable to create tokens');
+            }
 
-            response.send({ ...tokens, _id: userId });
-        } catch (err) {
-            throw new BadRequestError(
-                'error missing email or password',
-                err as Error
-            );
+            responseSendTokensAndUserId(response, userId, tokens);
+        } catch (error) {
+            throw error instanceof ServerRequestError
+                ? error
+                : new BadRequestError(
+                      'error missing email or password',
+                      error as Error
+                  );
         }
     });
