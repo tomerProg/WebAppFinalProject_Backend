@@ -25,6 +25,7 @@ const responseSendTokensAndUserId = (
     tokens: Tokens
 ) => {
     response.cookie(REFRESH_TOKEN_COOKIE_NAME, tokens.refreshToken, {
+        sameSite: 'strict',
         httpOnly: true
     });
     response.send({ accessToken: tokens.accessToken, _id: userId });

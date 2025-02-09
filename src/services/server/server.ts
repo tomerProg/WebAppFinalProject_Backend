@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import express, { Express } from 'express';
 import * as http from 'http';
 import swaggerUI from 'swagger-ui-express';
@@ -39,10 +39,20 @@ export class Server extends Service {
     }
 
     useMiddlewares = () => {
+        const corsOptions: CorsOptions =
+            process.env.NODE_ENVIRONMENT === 'production'
+                ? {
+                      credentials: true
+                  }
+                : {
+                      origin: 'http://localhost:5173',
+                      credentials: true
+                  };
+
         this.app.use(bodyParser.json());
         this.app.use(cookieParser());
         this.app.use(express.urlencoded({ extended: true }));
-        this.app.use(cors());
+        this.app.use(cors(corsOptions));
     };
 
     useRouters = () => {
