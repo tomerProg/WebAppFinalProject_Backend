@@ -11,11 +11,9 @@ export const validateRequestWithUserInBody = validateRequest(
 );
 
 export const requestWithRefreshTokenCookie = z.object({
-    cookies: z
-        .object({
-            [REFRESH_TOKEN_COOKIE_NAME]: z.string()
-        })
-        .partial()
+    cookies: z.object({
+        [REFRESH_TOKEN_COOKIE_NAME]: z.string()
+    })
 });
 
 const loginRequestZodSchema = z.object({
@@ -26,9 +24,6 @@ const loginRequestZodSchema = z.object({
 });
 export const validateLoginRequest = validateRequest(loginRequestZodSchema);
 
-// const refreshTokenRequestZodSchema = z.object({
-//     body: z.object({ refreshToken: z.string() })
-// });
 export const validateRequestWithRefreshToken = validateRequest(
     requestWithRefreshTokenCookie
 );
