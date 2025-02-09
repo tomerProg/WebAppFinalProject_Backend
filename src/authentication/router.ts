@@ -94,12 +94,11 @@ export const createAuthRouter = (
      *                 accessToken:
      *                   type: string
      *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-     *                 refreshToken:
-     *                   type: string
-     *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *                   description: access token for the user
      *                 _id:
      *                   type: string
-     *                   example: 60d0fe4f5311236168a109ca
+     *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *                   description: the user id
      *       400:
      *         description: Invalid credentials or request
      *       500:
@@ -110,7 +109,7 @@ export const createAuthRouter = (
     /**
      * @swagger
      * /auth/refresh:
-     *   post:
+     *   get:
      *     summary: Refresh tokens
      *     description: Refresh access and refresh tokens using the provided refresh token
      *     tags:
@@ -134,15 +133,17 @@ export const createAuthRouter = (
      *                 accessToken:
      *                   type: string
      *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-     *                 refreshToken:
+     *                   description: access token for the user
+     *                 _id:
      *                   type: string
      *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *                   description: the user id
      *       400:
      *         description: Invalid refresh token
      *       500:
      *         description: Server error
      */
-    router.post('/refresh', handlers.refresh);
+    router.get('/refresh', handlers.refresh);
 
     /**
      * @swagger
