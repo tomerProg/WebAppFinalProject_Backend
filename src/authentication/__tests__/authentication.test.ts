@@ -194,7 +194,7 @@ describe('authentication tests', () => {
             const { refreshToken } = tokens!;
 
             const refreshResponse = await request(app)
-                .post(routeInAuthRouter('/refresh'))
+                .get(routeInAuthRouter('/refresh'))
                 .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${refreshToken}`);
 
             const user = await userModel.findById(userId);
@@ -209,7 +209,7 @@ describe('authentication tests', () => {
                 extractRefreshTokenFromResponseHeader(loginResponse);
 
             const refreshResponse = await request(app)
-                .post(routeInAuthRouter('/refresh'))
+                .get(routeInAuthRouter('/refresh'))
                 .set('Cookie', loginResponse.headers['set-cookie']);
 
             const user = await userModel.findById(userId);
@@ -235,7 +235,7 @@ describe('authentication tests', () => {
             expect(createPostResponse.status).toBe(StatusCodes.UNAUTHORIZED);
 
             const refreshResponse = await request(app)
-                .post(routeInAuthRouter('/refresh'))
+                .get(routeInAuthRouter('/refresh'))
                 .set('Cookie', loginResponse.headers['set-cookie']);
 
             expect(refreshResponse.status).toBe(StatusCodes.OK);
