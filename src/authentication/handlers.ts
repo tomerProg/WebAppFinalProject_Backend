@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import { GoogleAuthClient } from '../googleAuth/google.auth';
@@ -146,6 +146,12 @@ export const googleLogin = (
             if (!tokens) {
                 throw new InternalServerError('unable to create tokens');
             }
+
+            if (!user.refreshToken) {
+                user.refreshToken = [];
+            }
+            user.refreshToken.push(tokens.refreshToken);
+            await user.save();
 
             responseSendTokensAndUserId(response, userId, tokens);
         } catch (error) {
