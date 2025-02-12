@@ -88,7 +88,7 @@ describe('users route', () => {
         expect(afterUpdateTestUser?.password).toStrictEqual(testUser.password);
     });
 
-    test('edit not existing user should return NotFound', async () => {
+    test('edit not existing user should return NOT_FOUND', async () => {
         await userModel.deleteOne({ _id: testUser._id });
         const updatedUsername = 'new nick';
         const response = await request(app).put('/user').send({

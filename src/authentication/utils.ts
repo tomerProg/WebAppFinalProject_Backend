@@ -37,11 +37,8 @@ export const generateTokens = (
 
 export const verifyRefreshToken = async (
     tokenSecret: string,
-    refreshToken: string | undefined
+    refreshToken: string
 ) => {
-    if (!refreshToken) {
-        throw new BadRequestError('missing refresh token');
-    }
     const verifiedTokenPayload = jwt.verify(refreshToken, tokenSecret);
     if (typeof verifiedTokenPayload === 'string') {
         throw new BadRequestError('token payload shoud not be string');

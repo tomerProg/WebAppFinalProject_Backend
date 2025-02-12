@@ -81,6 +81,11 @@ export const createAuthRouter = (
      *     responses:
      *       200:
      *         description: Successful login
+     *         headers:
+     *           Set-Cookie:
+     *             schema:
+     *               type: string
+     *               example: refresh-token=someAuthToken123; HttpOnly; 
      *         content:
      *           application/json:
      *             schema:
@@ -89,12 +94,11 @@ export const createAuthRouter = (
      *                 accessToken:
      *                   type: string
      *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-     *                 refreshToken:
-     *                   type: string
-     *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *                   description: access token for the user
      *                 _id:
      *                   type: string
-     *                   example: 60d0fe4f5311236168a109ca
+     *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *                   description: the user id
      *       400:
      *         description: Invalid credentials or request
      *       500:
@@ -105,21 +109,19 @@ export const createAuthRouter = (
     /**
      * @swagger
      * /auth/refresh:
-     *   post:
+     *   get:
      *     summary: Refresh tokens
      *     description: Refresh access and refresh tokens using the provided refresh token
      *     tags:
      *       - Auth
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               refreshToken:
-     *                 type: string
-     *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *     parameters:
+     *       - in: cookie
+     *         name: refresh-token
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: user jwt refresh token
+     *         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
      *     responses:
      *       200:
      *         description: Tokens refreshed successfully
@@ -131,15 +133,17 @@ export const createAuthRouter = (
      *                 accessToken:
      *                   type: string
      *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-     *                 refreshToken:
+     *                   description: access token for the user
+     *                 _id:
      *                   type: string
      *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *                   description: the user id
      *       400:
      *         description: Invalid refresh token
      *       500:
      *         description: Server error
      */
-    router.post('/refresh', handlers.refresh);
+    router.get('/refresh', handlers.refresh);
 
     /**
      * @swagger
@@ -149,16 +153,14 @@ export const createAuthRouter = (
      *     description: Logout user and invalidate the refresh token
      *     tags:
      *       - Auth
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               refreshToken:
-     *                 type: string
-     *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+     *     parameters:
+     *       - in: cookie
+     *         name: refresh-token
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: user jwt refresh token
+     *         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
      *     responses:
      *       200:
      *         description: Successful logout
@@ -190,6 +192,11 @@ export const createAuthRouter = (
      *     responses:
      *       200:
      *         description: Successful login
+     *         headers:
+     *           Set-Cookie:
+     *             schema:
+     *               type: string
+     *               example: refresh-token=someAuthToken123; HttpOnly;
      *         content:
      *           application/json:
      *             schema:
