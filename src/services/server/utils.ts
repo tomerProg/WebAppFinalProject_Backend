@@ -7,20 +7,26 @@ import {
     ServerRequestError
 } from './exceptions';
 
-export const expressAppRoutesErrorHandler = (
-    error: Error,
-    _request: Request,
-    response: Response,
-    _next: NextFunction
-) => {
-    if (error instanceof ServerRequestError) {
-        console.error('server request error: ', error.cause);
-        response.status(error.status).send(error.message);
-    } else {
-        console.error('unknown error: ', error);
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
-    }
-};
+export const createExpressAppRoutesErrorHandler =
+    (printLog: boolean = true) =>
+    (
+        error: Error,
+        _request: Request,
+        response: Response,
+        _next: NextFunction
+    ) => {
+        if (error instanceof ServerRequestError) {
+            if (printLog) {
+                console.error('server request error: ', error.cause);
+            }
+            response.status(error.status).send(error.message);
+        } else {
+            if (printLog) {
+                console.error('unknown error: ', error);
+            }
+            response.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+        }
+    };
 
 export const validateRequest =
     <T>(schema: z.Schema<T>, badRequestMessage?: string) =>
