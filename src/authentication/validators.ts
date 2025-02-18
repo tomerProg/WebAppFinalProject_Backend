@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { validateRequest } from '../services/server/utils';
 import { userZodSchema } from '../users/model';
 import { REFRESH_TOKEN_COOKIE_NAME } from './config';
+import { authenticatedRequestZodSchema } from './types';
 
 const requestWithUserBodyZodSchema = z.object({
     body: userZodSchema
@@ -34,3 +35,6 @@ const googleLoginRequestZodSchema = z.object({
 export const validateGoogleLoginRequest = validateRequest(
     googleLoginRequestZodSchema
 );
+
+
+export const validateAuthenticatedRequest = validateRequest(authenticatedRequestZodSchema);

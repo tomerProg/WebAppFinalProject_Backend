@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { NotFoundError } from '../services/server/exceptions';
 import { UserModel } from './model';
 import { validateEditUserRequest, validateGetUserRequest } from './validators';
+import { validateAuthenticatedRequest } from '../authentication/validators';
 
 export const editUser = (userModel: UserModel) =>
     validateEditUserRequest(async (request, response) => {
@@ -21,6 +22,17 @@ export const editUser = (userModel: UserModel) =>
 export const getUserById = (userModel: UserModel) =>
     validateGetUserRequest(async (request, response) => {
         const { id: userId } = request.params;
+        const user = await userModel.findById(userId, { password: 0 }).lean();
+        if (!user) {
+            throw new NotFoundError('user not found');
+        }
+        response.json(user);
+    });
+
+
+export const getLoggedUser = (userModel: UserModel) =>
+    validateAuthenticatedRequest(async (request, response) => {
+        const { id: userId } = request.user;
         const user = await userModel.findById(userId, { password: 0 }).lean();
         if (!user) {
             throw new NotFoundError('user not found');

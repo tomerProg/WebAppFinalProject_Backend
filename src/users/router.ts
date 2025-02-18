@@ -13,7 +13,8 @@ const buildRouteHandlers = (
     dependencies: UsersRouterDependencies
 ): Record<keyof typeof usersHandlers, RequestHandler> => ({
     editUser: usersHandlers.editUser(dependencies.userModel),
-    getUserById: usersHandlers.getUserById(dependencies.userModel)
+    getUserById: usersHandlers.getUserById(dependencies.userModel),
+    getLoggedUser: usersHandlers.getLoggedUser(dependencies.userModel)
 });
 
 export const createUsersRouter = (
@@ -62,7 +63,7 @@ export const createUsersRouter = (
 
     /**
      * @swagger
-     * /user/byId:
+     * /user/{id}:
      *   get:
      *     summary: get user attributes
      *     description: get an existing user
@@ -83,11 +84,37 @@ export const createUsersRouter = (
      *             schema:
      *               $ref: '#/components/schemas/UserPublicAttr'
      *       404:
-     *         description: Post not found
+     *         description: User not found
      *       500:
      *         description: Server error
      */
     router.get('/byId/:id', handlers.getUserById);
+
+    /**
+     * @swagger
+     * /user/:
+     *   get:
+     *     summary: get logged user attributes
+     *     description: get logged user attributes
+     *     tags:
+     *       - User
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: user public attributes
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UserPublicAttr'
+     *       401:
+     *         description: User is unauthorized
+     *       404:
+     *         description: User not found
+     *       500:
+     *         description: Server error
+     */
+    router.get('/', authMiddleware, handlers.getLoggedUser);
 
     return router;
 };
