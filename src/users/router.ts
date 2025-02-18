@@ -155,11 +155,7 @@ export const createUsersRouter = (
      *       500:
      *         description: Internal server error while fetching image
      */
-    router.get(
-        '/proxy-google-picture',
-        authMiddleware,
-        handlers.proxyGoogleImage
-    );
+    router.get('/proxy-google-picture', handlers.proxyGoogleImage);
 
     return router;
 };

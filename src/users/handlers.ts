@@ -1,6 +1,7 @@
+import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import { validateAuthenticatedRequest } from '../authentication/validators';
-import { NotFoundError } from '../services/server/exceptions';
+import { InternalServerError, NotFoundError } from '../services/server/exceptions';
 import { UserModel } from './model';
 import {
     validateEditUserRequest,
@@ -58,10 +59,7 @@ export const proxyGoogleImage = validateProxyGooglePictureRequest(
             );
             response.send(goggleResponse.data);
         } catch (error) {
-            console.log(error);
-            response
-                .status(StatusCodes.INTERNAL_SERVER_ERROR)
-                .send('Error fetching image');
+            throw new InternalServerError('Error fetching image from google')
         }
     }
 );

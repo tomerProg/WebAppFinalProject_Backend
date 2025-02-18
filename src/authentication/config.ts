@@ -1,6 +1,6 @@
 import { EnvironmentVariables } from '../config';
 
-export const REFRESH_TOKEN_COOKIE_NAME = 'refresh-token'
+export const REFRESH_TOKEN_COOKIE_NAME = 'refresh-token';
 
 export type AuthConfig = {
     tokenSecret: string;

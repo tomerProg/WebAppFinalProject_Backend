@@ -127,7 +127,7 @@ export const googleLogin = (
             credential
         );
         try {
-            const email = googlePayload.email;
+            const { email, picture, name } = googlePayload;
             if (!email) {
                 throw new BadRequestError('error missing email');
             }
@@ -138,9 +138,11 @@ export const googleLogin = (
                 ? unknownExistUser
                 : await userModel.create({
                       email: email,
-                      profileImage: googlePayload.picture,
+                      profileImage: picture
+                          ? `/user/proxy-google-picture?url=${picture}`
+                          : undefined,
                       password: 'google-login',
-                      username: googlePayload.name ?? email
+                      username: name ?? email
                   });
             const userId = user._id.toString();
             const tokens = await generateTokens(authConfig, userId);
