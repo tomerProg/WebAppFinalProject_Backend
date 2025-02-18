@@ -1,9 +1,9 @@
 import { RequestHandler, Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { AuthConfig } from './config';
-import * as authHandlers from './handlers';
-import { UserModel } from '../users/model';
 import { AuthRouterDependencies } from './dependencies';
-
+import * as authHandlers from './handlers';
+import axios from 'axios';
 /**
  * @swagger
  * tags:
@@ -85,7 +85,7 @@ export const createAuthRouter = (
      *           Set-Cookie:
      *             schema:
      *               type: string
-     *               example: refresh-token=someAuthToken123; HttpOnly; 
+     *               example: refresh-token=someAuthToken123; HttpOnly;
      *         content:
      *           application/json:
      *             schema:

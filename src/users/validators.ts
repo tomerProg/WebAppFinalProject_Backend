@@ -23,6 +23,18 @@ const getUserRequestZodSchema = authenticatedRequestZodSchema.and(
     })
 );
 export type GetUserRequest = z.infer<typeof getUserRequestZodSchema>;
-export const validateGetUserRequest = validateRequest(
-    getUserRequestZodSchema
+export const validateGetUserRequest = validateRequest(getUserRequestZodSchema);
+
+const proxyGooglePictureRequestZodSchema = authenticatedRequestZodSchema.and(
+    z.object({
+        query: z.object({
+            url: z.string().url()
+        })
+    })
+);
+export type ProxyGooglePictureRequest = z.infer<
+    typeof proxyGooglePictureRequestZodSchema
+>;
+export const validateProxyGooglePictureRequest = validateRequest(
+    proxyGooglePictureRequestZodSchema
 );

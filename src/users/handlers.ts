@@ -1,8 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
+import { validateAuthenticatedRequest } from '../authentication/validators';
 import { NotFoundError } from '../services/server/exceptions';
 import { UserModel } from './model';
-import { validateEditUserRequest, validateGetUserRequest } from './validators';
-import { validateAuthenticatedRequest } from '../authentication/validators';
+import {
+    validateEditUserRequest,
+    validateGetUserRequest,
+    validateProxyGooglePictureRequest
+} from './validators';
 
 export const editUser = (userModel: UserModel) =>
     validateEditUserRequest(async (request, response) => {
@@ -29,7 +33,6 @@ export const getUserById = (userModel: UserModel) =>
         response.json(user);
     });
 
-
 export const getLoggedUser = (userModel: UserModel) =>
     validateAuthenticatedRequest(async (request, response) => {
         const { id: userId } = request.user;
@@ -39,3 +42,26 @@ export const getLoggedUser = (userModel: UserModel) =>
         }
         response.json(user);
     });
+
+export const proxyGoogleImage = validateProxyGooglePictureRequest(
+    async (request, response) => {
+        const {
+            query: { url: imageUrl }
+        } = request;
+        try {
+            const goggleResponse = await axios.get(imageUrl, {
+                responseType: 'arraybuffer'
+            });
+            response.setHeader(
+                'Content-Type',
+                goggleResponse.headers['content-type']
+            );
+            response.send(goggleResponse.data);
+        } catch (error) {
+            console.log(error);
+            response
+                .status(StatusCodes.INTERNAL_SERVER_ERROR)
+                .send('Error fetching image');
+        }
+    }
+);

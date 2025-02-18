@@ -132,6 +132,7 @@ export const googleLogin = (
                 throw new BadRequestError('error missing email');
             }
 
+            console.log(googlePayload);
             const unknownExistUser = await userModel.findOne({ email });
             const user = unknownExistUser
                 ? unknownExistUser
