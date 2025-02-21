@@ -89,7 +89,7 @@ export const createUsersRouter = (
      *       500:
      *         description: Server error
      */
-    router.get('/byId/:id', handlers.getUserById);
+    router.get('/:id', handlers.getUserById);
 
     /**
      * @swagger
