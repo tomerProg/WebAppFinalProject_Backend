@@ -85,6 +85,10 @@ export const logout = (tokenSecret: string) =>
             const refreshToken = request.cookies[REFRESH_TOKEN_COOKIE_NAME];
             const user = await verifyRefreshToken(tokenSecret, refreshToken);
             await user.save();
+            response.cookie(REFRESH_TOKEN_COOKIE_NAME, '', {
+                sameSite: 'strict',
+                httpOnly: true
+            });
             response.sendStatus(StatusCodes.OK);
         } catch (err) {
             response.status(StatusCodes.BAD_REQUEST).send(err);
@@ -127,7 +131,7 @@ export const googleLogin = (
             credential
         );
         try {
-            const email = googlePayload.email;
+            const { email, picture, name } = googlePayload;
             if (!email) {
                 throw new BadRequestError('error missing email');
             }
@@ -137,9 +141,11 @@ export const googleLogin = (
                 ? unknownExistUser
                 : await userModel.create({
                       email: email,
-                      profileImage: googlePayload.picture,
+                      profileImage: picture
+                          ? `/user/proxy-google-picture?url=${picture}`
+                          : undefined,
                       password: 'google-login',
-                      username: googlePayload.name ?? email
+                      username: name ?? email
                   });
             const userId = user._id.toString();
             const tokens = await generateTokens(authConfig, userId);

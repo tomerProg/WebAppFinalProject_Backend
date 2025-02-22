@@ -23,6 +23,7 @@
   "homepage": "https://github.com/tomerProg/WebAppFinalProject_Backend#readme",
   "description": "",
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
@@ -45,6 +46,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",

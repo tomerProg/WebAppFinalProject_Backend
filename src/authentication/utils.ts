@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AuthConfig } from './config';
-import { userModel } from '../users/model';
-import { TokenPayload, Tokens } from './types';
 import { BadRequestError } from '../services/server/exceptions';
+import { userModel } from '../users/model';
+import { AuthConfig } from './config';
+import { TokenPayload, Tokens } from './types';
 
 const saltRounds = 10;
 
