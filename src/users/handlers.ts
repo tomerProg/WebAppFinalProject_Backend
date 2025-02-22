@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import { validateAuthenticatedRequest } from '../authentication/validators';
-import { InternalServerError, NotFoundError } from '../services/server/exceptions';
+import {
+    InternalServerError,
+    NotFoundError
+} from '../services/server/exceptions';
 import { UserModel } from './model';
 import {
     validateEditUserRequest,
@@ -27,7 +30,9 @@ export const editUser = (userModel: UserModel) =>
 export const getUserById = (userModel: UserModel) =>
     validateGetUserRequest(async (request, response) => {
         const { id: userId } = request.params;
-        const user = await userModel.findById(userId, { password: 0 }).lean();
+        const user = await userModel
+            .findById(userId, { password: 0, refreshToken: 0 })
+            .lean();
         if (!user) {
             throw new NotFoundError('user not found');
         }
@@ -37,7 +42,9 @@ export const getUserById = (userModel: UserModel) =>
 export const getLoggedUser = (userModel: UserModel) =>
     validateAuthenticatedRequest(async (request, response) => {
         const { id: userId } = request.user;
-        const user = await userModel.findById(userId, { password: 0 }).lean();
+        const user = await userModel
+            .findById(userId, { password: 0, refreshToken: 0 })
+            .lean();
         if (!user) {
             throw new NotFoundError('user not found');
         }
@@ -59,7 +66,7 @@ export const proxyGoogleImage = validateProxyGooglePictureRequest(
             );
             response.send(goggleResponse.data);
         } catch (error) {
-            throw new InternalServerError('Error fetching image from google')
+            throw new InternalServerError('Error fetching image from google');
         }
     }
 );
