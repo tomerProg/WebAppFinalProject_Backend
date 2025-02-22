@@ -15,7 +15,7 @@ const buildRouteHandlers = (
     editComment: commentsController.editComment(dependencies.commentModel),
     createComment: commentsController.createComment(dependencies.commentModel),
     deleteComment: commentsController.deleteComment(dependencies.commentModel),
-    getAllComments: commentsController.getAllComments(dependencies.commentModel),
+    getPostComments: commentsController.getPostComments(dependencies.commentModel),
     getCommentById: commentsController.getCommentById(dependencies.commentModel),
 });
 
@@ -28,42 +28,14 @@ export const createCommentsRouter = (
 
 /**
  * @swagger
- * components:
- *   schemas:
- *     Comment:
- *       type: object
- *       required:
- *         - owner
- *         - postId
- *         - content
- *       properties:
- *         _id:
- *           type: string
- *           description: The auto-generated id of the comment
- *         owner:
- *           type: string
- *           description: The owner id of the comment
- *         postId:
- *           type: string
- *           description: The post id of the comment
- *         content:
- *           type: string
- *           description: The content of the comment
- *       example:
- *         _id:   679a70b9f1d91978d2650d84  
- *         owner: 324vt23r4tr234t245tbv45by
- *         postId: 679a708bf1d91978d2650d81
- *         content: my first comment
- */
-
-/**
- * @swagger
  * /comment:
  *   get:
- *     summary: Get all comments
- *     description: Retrieve a list of all comments
+ *     summary: Get post comments
+ *     description: Retrieve a list of post comments
  *     tags:
  *       - Comment
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: postId
@@ -79,11 +51,19 @@ export const createCommentsRouter = (
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Comment'
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/Comment'
+ *                   - type: object
+ *                     properties:
+ *                       isUserTheOwner:
+ *                         type: boolean
+ *                         description: is the logged user is the owner of the comment
+ *       401:
+ *         description: user is unauthenticated
  *       500:
  *         description: Server error
  */
-    router.get('/', handlers.getAllComments)   
+    router.get('/', authMiddleware, handlers.getPostComments)   
 
 /**
  * @swagger

@@ -12,7 +12,7 @@ const editCommentRequestZodSchema = authenticatedRequestZodSchema.and(
         })
     })
 );
-export type EditCommentRequest = z.infer<typeof  editCommentRequestZodSchema>;
+export type EditCommentRequest = z.infer<typeof editCommentRequestZodSchema>;
 export const validateEditCommentRequest = validateRequest(
     editCommentRequestZodSchema
 );
@@ -21,11 +21,13 @@ const createCommentRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         body: z.object({
             content: z.string(),
-            postId: z.string(),
+            postId: z.string()
         })
     })
 );
-export type CreateCommentRequest = z.infer<typeof  createCommentRequestZodSchema>;
+export type CreateCommentRequest = z.infer<
+    typeof createCommentRequestZodSchema
+>;
 export const validateCreateCommentRequest = validateRequest(
     createCommentRequestZodSchema
 );
@@ -33,34 +35,40 @@ export const validateCreateCommentRequest = validateRequest(
 const deleteCommentRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         params: z.object({
-            id: z.string(),
+            id: z.string()
         })
     })
 );
-export type DeleteCommentRequest = z.infer<typeof  deleteCommentRequestZodSchema>;
+export type DeleteCommentRequest = z.infer<
+    typeof deleteCommentRequestZodSchema
+>;
 export const validateDeleteCommentRequest = validateRequest(
     deleteCommentRequestZodSchema
 );
 
-const getCommentRequestZodSchema = 
+const getPostCommentRequestZodSchema = authenticatedRequestZodSchema.and(
     z.object({
         query: z.object({
             postId: z.string()
         })
     })
-
-export type GetCommentRequest = z.infer<typeof  getCommentRequestZodSchema>;
-export const validateGetCommentRequest = validateRequest(
-    getCommentRequestZodSchema
+);
+export type GetPostCommentRequest = z.infer<
+    typeof getPostCommentRequestZodSchema
+>;
+export const validateGetPostCommentRequest = validateRequest(
+    getPostCommentRequestZodSchema
 );
 
 const getCommentByIdRequestZodSchema = z.object({
     params: z.object({
-            id: z.string()
-        })
-    });
+        id: z.string()
+    })
+});
 
-export type GetCommentByIdRequest = z.infer<typeof  getCommentByIdRequestZodSchema>;
+export type GetCommentByIdRequest = z.infer<
+    typeof getCommentByIdRequestZodSchema
+>;
 export const validateGetCommentByIdRequest = validateRequest(
     getCommentByIdRequestZodSchema
 );

@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { postModel } from '../posts/model';
 import { BadRequestError, ForbiddenError } from '../services/server/exceptions';
 import { CommentModel } from './model';
 import {
@@ -6,9 +7,8 @@ import {
     validateDeleteCommentRequest,
     validateEditCommentRequest,
     validateGetCommentByIdRequest,
-    validateGetCommentRequest
+    validateGetPostCommentRequest
 } from './validators';
-import { postModel } from '../posts/model';
 
 export const editComment = (commentModel: CommentModel) =>
     validateEditCommentRequest(async (request, response) => {
@@ -20,7 +20,7 @@ export const editComment = (commentModel: CommentModel) =>
         }
 
         const { id: user } = request.user;
-        if (user != originalComment.owner) {   
+        if (user != originalComment.owner) {
             throw new ForbiddenError('invalid user');
         }
 
@@ -38,10 +38,10 @@ export const editComment = (commentModel: CommentModel) =>
 export const createComment = (commentModel: CommentModel) =>
     validateCreateCommentRequest(async (request, response) => {
         const { id: user } = request.user;
-        const {postId} = request.body;
-        
-        const existingPost = await postModel.find({_id:postId}).lean();
-        if (!existingPost){
+        const { postId } = request.body;
+
+        const existingPost = await postModel.find({ _id: postId }).lean();
+        if (!existingPost) {
             throw new BadRequestError('post does not exists');
         }
 
@@ -73,11 +73,16 @@ export const deleteComment = (commentModel: CommentModel) =>
         response.sendStatus(StatusCodes.OK);
     });
 
-export const getAllComments = (commentModel: CommentModel) =>
-    validateGetCommentRequest(async (request, response) => {
-        const {postId} = request.query;
-        const comments = await commentModel.find({postId});
-        response.send(comments);
+export const getPostComments = (commentModel: CommentModel) =>
+    validateGetPostCommentRequest(async (request, response) => {
+        const { id: userId } = request.user;
+        const { postId } = request.query;
+        const comments = await commentModel.find({ postId }).lean();
+        const commentsWithUserIdentified = comments.map((comment) => ({
+            ...comment,
+            isUserTheOwner: userId === comment.owner
+        }));
+        response.send(commentsWithUserIdentified);
     });
 
 export const getCommentById = (commentModel: CommentModel) =>
