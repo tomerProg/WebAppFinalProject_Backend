@@ -1,13 +1,15 @@
 import { StatusCodes } from 'http-status-codes';
+import { isNil } from 'ramda';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../services/server/exceptions';
 import { PostModel } from './model';
-import { buildPostFilter } from './utils';
+import { buildPostFilter, createPostLikeUpdate } from './utils';
 import {
     validateCreatePostRequest,
     validateDeletePostRequest,
     validateEditPostRequest,
     validateGetPostByIdRequest,
-    validateGetPostRequest
+    validateGetPostRequest,
+    validateLikePostRequest
 } from './validators';
 import { ChatGenerator } from '../openai/openai';
 
@@ -91,4 +93,24 @@ export const getPostById = (postModel: PostModel) =>
 
         const post = await postModel.findById(id).lean();
         response.send(post);
+    });
+
+export const setPostLike = (postModel: PostModel) =>
+    validateLikePostRequest(async (request, response) => {
+        const {
+            user: { id: userId },
+            params: { id: postId },
+            body: { like }
+        } = request;
+
+        const update = createPostLikeUpdate(userId, like);
+        const { modifiedCount } = await postModel.updateOne(
+            { _id: postId },
+            update
+        );
+        if (isNil(modifiedCount) || modifiedCount === 0) {
+            throw new NotFoundError();
+        }
+
+        response.sendStatus(StatusCodes.OK);
     });
