@@ -70,6 +70,8 @@ export const createUsersRouter = (
      *     description: get an existing user
      *     tags:
      *       - User
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - name: id
      *         in: path
@@ -89,7 +91,7 @@ export const createUsersRouter = (
      *       500:
      *         description: Server error
      */
-    router.get('/:id', handlers.getUserById);
+    router.get('/:id', authMiddleware, handlers.getUserById);
 
     /**
      * @swagger
