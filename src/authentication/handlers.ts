@@ -85,6 +85,10 @@ export const logout = (tokenSecret: string) =>
             const refreshToken = request.cookies[REFRESH_TOKEN_COOKIE_NAME];
             const user = await verifyRefreshToken(tokenSecret, refreshToken);
             await user.save();
+            response.cookie(REFRESH_TOKEN_COOKIE_NAME, '', {
+                sameSite: 'strict',
+                httpOnly: true
+            });
             response.sendStatus(StatusCodes.OK);
         } catch (err) {
             response.status(StatusCodes.BAD_REQUEST).send(err);
