@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import cors, { CorsOptions } from 'cors';
 import express, { Express } from 'express';
 import * as http from 'http';
+import * as https from 'https';
 import swaggerUI from 'swagger-ui-express';
 import { createAuthMiddleware } from '../../authentication/middlewares';
 import { createAuthRouter } from '../../authentication/router';
@@ -13,7 +14,7 @@ import { createFilesRouter } from '../../files/router';
 import { ChatGenerator } from '../../openai/openai';
 import { postModel } from '../../posts/model';
 import { createPostsRouter } from '../../posts/router';
-import specs from '../../swagger';
+import { createSwaggerSpecs } from '../../swagger';
 import { createUsersRouter } from '../../users/router';
 import { Service } from '../service';
 import { ServerConfig } from './config';
@@ -22,7 +23,7 @@ import { createExpressAppRoutesErrorHandler } from './utils';
 
 export class Server extends Service {
     private app: Express;
-    private server: http.Server;
+    private server: http.Server | https.Server;
 
     constructor(
         private readonly config: ServerConfig,
@@ -33,21 +34,21 @@ export class Server extends Service {
         this.app = express();
         this.useMiddlewares();
         this.useRouters();
+        this.useSwagger();
         this.useErrorHandler();
+        if (!this.config.isLocalMode) {
+            this.useFrontend();
+        }
 
-        this.server = http.createServer(this.app);
+        this.server = this.createServer();
     }
 
-    useMiddlewares = () => {
-        const corsOptions: CorsOptions =
-            process.env.NODE_ENVIRONMENT === 'production'
-                ? {
-                      credentials: true
-                  }
-                : {
-                      origin: 'http://localhost:5173',
-                      credentials: true
-                  };
+    private useMiddlewares = () => {
+        const { isLocalMode, domain } = this.config;
+        const corsOptions: CorsOptions = {
+            origin: isLocalMode ? 'http://localhost:5173' : domain,
+            credentials: true
+        };
 
         this.app.use(bodyParser.json());
         this.app.use(cookieParser());
@@ -55,7 +56,7 @@ export class Server extends Service {
         this.app.use(cors(corsOptions));
     };
 
-    useRouters = () => {
+    private useRouters = () => {
         const { database, googleAuthClient } = this.dependencies;
         const { userModel } = database.getModels();
         const { filesRouterConfig, authRouterConfig } =
@@ -81,17 +82,33 @@ export class Server extends Service {
             '/comment',
             createCommentsRouter(authMiddleware, { commentModel })
         );
+    };
+
+    private useSwagger = () => {
+        const specs = createSwaggerSpecs(this.config);
         this.app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
     };
 
-    useErrorHandler = () => {
+    private useFrontend = () => {
+        this.app.use(express.static('front'));
+    };
+
+    private useErrorHandler = () => {
         this.app.use(createExpressAppRoutesErrorHandler());
     };
 
-    createRoutersConfigs = () => ({
-        filesRouterConfig: createFileRouterConfig(this.config, 'http'),
+    private createRoutersConfigs = () => ({
+        filesRouterConfig: createFileRouterConfig(this.config),
         authRouterConfig: this.config.authConfig
     });
+
+    private createServer = () => {
+        const { isLocalMode } = this.config;
+
+        return isLocalMode
+            ? http.createServer(this.app)
+            : https.createServer(this.app);
+    };
 
     getExpressApp = () => this.app;
 

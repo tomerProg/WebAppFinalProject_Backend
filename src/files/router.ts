@@ -12,8 +12,7 @@ import { createMulterUpload } from './logic';
  */
 
 export const createFilesRouter = (config: FileRouterConfig) => {
-    const { postImagesDestination, profileImagesDestination, serverUrl } =
-        config;
+    const { postImagesDestination, profileImagesDestination, domain } = config;
     const router = Router();
     fs.mkdirSync(postImagesDestination, { recursive: true });
     fs.mkdirSync(profileImagesDestination, { recursive: true });
@@ -54,7 +53,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     router.post(
         '/profile-image',
         uplaodUserAvatar.single('profileImage'),
-        responseForUploadedFile(serverUrl, 'files/profile-image/')
+        responseForUploadedFile(domain, 'files/profile-image/')
     );
 
     /**
@@ -127,7 +126,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     router.post(
         '/post-image',
         uploadPostImage.single('postImage'),
-        responseForUploadedFile(serverUrl, 'files/post-image/')
+        responseForUploadedFile(domain, 'files/post-image/')
     );
 
     /**

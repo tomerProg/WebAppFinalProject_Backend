@@ -1,17 +1,22 @@
-import swaggerJsDoc from "swagger-jsdoc"
+import swaggerJsDoc from 'swagger-jsdoc';
+import { ServerConfig } from './services/server/config';
 
-const options = {
+const options = (serverConfig: ServerConfig) => ({
     definition: {
-        openapi: "3.0.0",
+        openapi: '3.0.0',
         info: {
-            title: "Web Apps Assignment REST API",
-            version: "1.0.0",
-            description: "REST server including authentication using JWT",
+            title: 'Fixers API',
+            version: '1.0.0',
+            description:
+                'Api doc for Fixers, final project of Tomer Shomron & Omer Hasid'
         },
-        servers: [{url: 'http://localhost:8080'},
-                  {url: 'http://localhost:3000'}],
+        servers: [
+            { url: 'http://localhost:3000' },
+            { url: serverConfig.domain }
+        ]
     },
-    apis: ["./src/*.ts", "./src/**/*.ts"],
-};
+    apis: ['./src/*.ts', './src/**/*.ts']
+});
 
-export default swaggerJsDoc(options)
+export const createSwaggerSpecs = (serverConfig: ServerConfig) =>
+    swaggerJsDoc(options);

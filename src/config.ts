@@ -1,9 +1,12 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-dotenv.config();
+const nodeEnv = process.env.NODE_ENV ?? '';
+const envFile = nodeEnv !== 'production' ? '.env.dev' : '.env.prod';
+dotenv.config({ path: envFile });
 
 const environmentVariablesZodScema = z.object({
+    NODE_ENV: z.string().default('development'),
     PORT: z.coerce.number(),
     SERVICE_DOMAIN: z.string(),
     DB_CONNECT: z.string(),
