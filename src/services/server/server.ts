@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors, { CorsOptions } from 'cors';
 import express, { Express } from 'express';
+import { readFileSync } from 'fs';
 import * as http from 'http';
 import * as https from 'https';
 import swaggerUI from 'swagger-ui-express';
@@ -104,10 +105,16 @@ export class Server extends Service {
 
     private createServer = () => {
         const { isLocalMode } = this.config;
+        if (isLocalMode) {
+            return http.createServer(this.app);
+        }
 
-        return isLocalMode
-            ? http.createServer(this.app)
-            : https.createServer(this.app);
+        const httpsOptions: https.ServerOptions = {
+            key: readFileSync('../client-key.pem'),
+            cert: readFileSync('../client-cert.pem')
+        };
+
+        return https.createServer(httpsOptions, this.app);
     };
 
     getExpressApp = () => this.app;
