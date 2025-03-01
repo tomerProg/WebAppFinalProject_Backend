@@ -1,7 +1,7 @@
 import swaggerJsDoc from 'swagger-jsdoc';
 import { ServerConfig } from './services/server/config';
 
-const options = (serverConfig: ServerConfig) => ({
+const createSwaggerOptions = (serverConfig: ServerConfig) => ({
     definition: {
         openapi: '3.0.0',
         info: {
@@ -19,4 +19,4 @@ const options = (serverConfig: ServerConfig) => ({
 });
 
 export const createSwaggerSpecs = (serverConfig: ServerConfig) =>
-    swaggerJsDoc(options);
+    swaggerJsDoc(createSwaggerOptions(serverConfig));
