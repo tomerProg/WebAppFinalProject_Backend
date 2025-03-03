@@ -28,7 +28,7 @@ export const createCommentsRouter = (
 
 /**
  * @swagger
- * /comment:
+ * /api/comment:
  *   get:
  *     summary: Get post comments
  *     description: Retrieve a list of post comments
@@ -67,7 +67,7 @@ export const createCommentsRouter = (
 
 /**
  * @swagger
- * /comment/{id}:
+ * /api/comment/{id}:
  *   get:
  *     summary: Get a comment by ID
  *     description: Retrieve a single comment by its ID
@@ -96,7 +96,7 @@ export const createCommentsRouter = (
    
 /**
  * @swagger
- * /comment:
+ * /api/comment:
  *   post:
  *     summary: Create a new comment
  *     description: Create a new comment
@@ -135,7 +135,7 @@ export const createCommentsRouter = (
     router.post('/', authMiddleware, handlers.createComment)
 /**
  * @swagger
- * /comment/{id}:
+ * /api/comment/{id}:
  *   put:
  *     summary: Update comment attributes
  *     description: Update an existing comment
@@ -175,7 +175,7 @@ export const createCommentsRouter = (
 
 /**
  * @swagger
- * /comment/{id}:
+ * /api/comment/{id}:
  *   delete:
  *     summary: Delete comment 
  *     description: Delete an existing comment

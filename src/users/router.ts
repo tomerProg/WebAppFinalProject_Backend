@@ -27,7 +27,7 @@ export const createUsersRouter = (
 
     /**
      * @swagger
-     * /user:
+     * /api/user:
      *   put:
      *     summary: Update user attributes
      *     description: Update an existing user
@@ -64,7 +64,7 @@ export const createUsersRouter = (
 
     /**
      * @swagger
-     * /user/{id}:
+     * /api/user/{id}:
      *   get:
      *     summary: get user attributes
      *     description: get an existing user
@@ -95,7 +95,7 @@ export const createUsersRouter = (
 
     /**
      * @swagger
-     * /user/:
+     * /api/user/:
      *   get:
      *     summary: get logged user attributes
      *     description: get logged user attributes
@@ -121,7 +121,7 @@ export const createUsersRouter = (
 
     /**
      * @swagger
-     * /user/proxy-image:
+     * /api/user/proxy-image:
      *   get:
      *     summary: Proxy an image from Google
      *     description: Fetches and serves an image from Google to avoid 429 rate limits.

@@ -19,7 +19,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
 
     /**
      * @swagger
-     * /files/profile-image:
+     * /api/files/profile-image:
      *   post:
      *     tags:
      *       - Files
@@ -58,7 +58,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
 
     /**
      * @swagger
-     * /files/profile-image/{path}:
+     * /api/files/profile-image/{path}:
      *   get:
      *     summary: fetch profile image
      *     description: Returns the requested profile image as a binary file.
@@ -92,7 +92,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
 
     /**
      * @swagger
-     * /files/post-image:
+     * /api/files/post-image:
      *   post:
      *     tags:
      *       - Files
@@ -131,7 +131,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
 
     /**
      * @swagger
-     * /files/post-image/{path}:
+     * /api/files/post-image/{path}:
      *   get:
      *     summary: fetch post image
      *     description: Returns the requested post image as a binary file.

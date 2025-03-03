@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors, { CorsOptions } from 'cors';
-import express, { Express } from 'express';
+import express, { Express, Router } from 'express';
 import { readFileSync } from 'fs';
 import * as http from 'http';
 import * as https from 'https';
@@ -34,7 +34,7 @@ export class Server extends Service {
 
         this.app = express();
         this.useMiddlewares();
-        this.useRouters();
+        this.useApiRouters();
         this.useSwagger();
         this.useErrorHandler();
         if (!this.config.isLocalMode) {
@@ -57,7 +57,7 @@ export class Server extends Service {
         this.app.use(cors(corsOptions));
     };
 
-    private useRouters = () => {
+    private useApiRouters = () => {
         const { database, googleAuthClient } = this.dependencies;
         const { userModel } = database.getModels();
         const { filesRouterConfig, authRouterConfig } =
@@ -68,21 +68,24 @@ export class Server extends Service {
 
         const { chatGeneratorConfig } = this.config;
         const chatGenerator = new ChatGenerator(chatGeneratorConfig);
-
-        this.app.use('/files', createFilesRouter(filesRouterConfig));
-        this.app.use(
+        
+        const apiRouter = Router();
+        apiRouter.use('/files', createFilesRouter(filesRouterConfig));
+        apiRouter.use(
             '/auth',
             createAuthRouter(authRouterConfig, { userModel, googleAuthClient })
         );
-        this.app.use('/user', createUsersRouter(authMiddleware, { userModel }));
-        this.app.use(
+        apiRouter.use('/user', createUsersRouter(authMiddleware, { userModel }));
+        apiRouter.use(
             '/post',
             createPostsRouter(authMiddleware, { postModel, chatGenerator })
         );
-        this.app.use(
+        apiRouter.use(
             '/comment',
             createCommentsRouter(authMiddleware, { commentModel })
         );
+
+        this.app.use('/api', apiRouter)
     };
 
     private useSwagger = () => {
@@ -92,6 +95,11 @@ export class Server extends Service {
 
     private useFrontend = () => {
         this.app.use(express.static('front'));
+        // Handle React routes
+        const pwd = process.env.PWD ?? '.'
+        this.app.get("*", (_req, res) => {
+            res.sendFile(pwd.concat('/front/index.html'));
+        });
     };
 
     private useErrorHandler = () => {
