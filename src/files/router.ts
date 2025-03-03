@@ -53,7 +53,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     router.post(
         '/profile-image',
         uplaodUserAvatar.single('profileImage'),
-        responseForUploadedFile(domain, '/files/profile-image/')
+        responseForUploadedFile(domain, '/api/files/profile-image/')
     );
 
     /**
@@ -126,7 +126,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     router.post(
         '/post-image',
         uploadPostImage.single('postImage'),
-        responseForUploadedFile(domain, '/files/post-image/')
+        responseForUploadedFile(domain, '/api/files/post-image/')
     );
 
     /**
