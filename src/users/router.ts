@@ -14,8 +14,7 @@ const buildRouteHandlers = (
 ): Record<keyof typeof usersHandlers, RequestHandler> => ({
     editUser: usersHandlers.editUser(dependencies.userModel),
     getUserById: usersHandlers.getUserById(dependencies.userModel),
-    getLoggedUser: usersHandlers.getLoggedUser(dependencies.userModel),
-    proxyGoogleImage: usersHandlers.proxyGoogleImage
+    getLoggedUser: usersHandlers.getLoggedUser(dependencies.userModel)
 });
 
 export const createUsersRouter = (
@@ -118,46 +117,6 @@ export const createUsersRouter = (
      *         description: Server error
      */
     router.get('/', authMiddleware, handlers.getLoggedUser);
-
-    /**
-     * @swagger
-     * /api/user/proxy-image:
-     *   get:
-     *     summary: Proxy an image from Google
-     *     description: Fetches and serves an image from Google to avoid 429 rate limits.
-     *     tags:
-     *       - User
-     *     parameters:
-     *       - in: query
-     *         name: url
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: The URL of the image to proxy
-     *     responses:
-     *       200:
-     *         description: Successfully retrieved image
-     *         content:
-     *           image/png:
-     *             schema:
-     *               type: string
-     *               format: binary
-     *           image/jpeg:
-     *             schema:
-     *               type: string
-     *               format: binary
-     *           image/webp:
-     *             schema:
-     *               type: string
-     *               format: binary
-     *       400:
-     *         description: Invalid request (missing URL)
-     *       401:
-     *         description: user is unauthenticated
-     *       500:
-     *         description: Internal server error while fetching image
-     */
-    router.get('/proxy-google-picture', handlers.proxyGoogleImage);
 
     return router;
 };

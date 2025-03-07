@@ -141,9 +141,7 @@ export const googleLogin = (
                 ? unknownExistUser
                 : await userModel.create({
                       email: email,
-                      profileImage: picture
-                          ? `${authConfig.serverDomain}/api/user/proxy-google-picture?url=${picture}`
-                          : undefined,
+                      profileImage: picture,
                       password: 'google-login',
                       username: name ?? email
                   });

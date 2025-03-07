@@ -7,13 +7,11 @@ export type AuthConfig = {
     tokenSecret: string;
     tokenExpires: SignOptions['expiresIn'];
     refreshTokenExpires: SignOptions['expiresIn'];
-    serverDomain: string;
 };
 
 export const createAuthConfig = (env: EnvironmentVariables): AuthConfig => ({
     tokenSecret: env.AUTH_TOKEN_SECRET,
     tokenExpires: env.AUTH_TOKEN_EXPIRES as SignOptions['expiresIn'],
     refreshTokenExpires:
-        env.AUTH_REFRESH_TOKEN_EXPIRES as SignOptions['expiresIn'],
-    serverDomain: env.SERVICE_DOMAIN
+        env.AUTH_REFRESH_TOKEN_EXPIRES as SignOptions['expiresIn']
 });
