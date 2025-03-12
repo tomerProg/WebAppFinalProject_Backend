@@ -58,23 +58,3 @@ export const getLoggedUser = (userModel: UserModel) =>
         }
         response.json(user);
     });
-
-export const proxyGoogleImage = validateProxyGooglePictureRequest(
-    async (request, response) => {
-        const {
-            query: { url: imageUrl }
-        } = request;
-        try {
-            const goggleResponse = await axios.get(imageUrl, {
-                responseType: 'arraybuffer'
-            });
-            response.setHeader(
-                'Content-Type',
-                goggleResponse.headers['content-type']
-            );
-            response.send(goggleResponse.data);
-        } catch (error) {
-            throw new InternalServerError('Error fetching image from google');
-        }
-    }
-);

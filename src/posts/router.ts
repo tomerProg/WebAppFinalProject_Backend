@@ -30,7 +30,7 @@ export const createPostsRouter = (
 
     /**
      * @swagger
-     * /post:
+     * /api/post:
      *   get:
      *     summary: Get all posts
      *     description: Retrieve a list of all posts
@@ -52,7 +52,7 @@ export const createPostsRouter = (
 
     /**
      * @swagger
-     * /post/{id}:
+     * /api/post/{id}:
      *   get:
      *     summary: Get a post by ID
      *     description: Retrieve a single post by its ID
@@ -81,7 +81,7 @@ export const createPostsRouter = (
 
     /**
      * @swagger
-     * /post:
+     * /api/post:
      *   post:
      *     summary: Create a new post
      *     description: Create a new post
@@ -127,7 +127,7 @@ export const createPostsRouter = (
 
     /**
      * @swagger
-     * /post/{id}:
+     * /api/post/{id}:
      *   put:
      *     summary: Update post attributes
      *     description: Update an existing post
@@ -179,7 +179,7 @@ export const createPostsRouter = (
 
     /**
      * @swagger
-     * /post/{id}:
+     * /api/post/{id}:
      *   delete:
      *     summary: Delete post
      *     description: Delete an existing post
@@ -208,7 +208,7 @@ export const createPostsRouter = (
 
     /**
      * @swagger
-     * /post/like/{id}:
+     * /api/post/like/{id}:
      *   put:
      *     summary: Update post user like
      *     description: change the likes and dislikes of post for user

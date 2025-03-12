@@ -12,15 +12,14 @@ import { createMulterUpload } from './logic';
  */
 
 export const createFilesRouter = (config: FileRouterConfig) => {
-    const { postImagesDestination, profileImagesDestination, serverUrl } =
-        config;
+    const { postImagesDestination, profileImagesDestination, domain } = config;
     const router = Router();
     fs.mkdirSync(postImagesDestination, { recursive: true });
     fs.mkdirSync(profileImagesDestination, { recursive: true });
 
     /**
      * @swagger
-     * /files/profile-image:
+     * /api/files/profile-image:
      *   post:
      *     tags:
      *       - Files
@@ -54,12 +53,12 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     router.post(
         '/profile-image',
         uplaodUserAvatar.single('profileImage'),
-        responseForUploadedFile(serverUrl, 'files/profile-image/')
+        responseForUploadedFile(domain, '/api/files/profile-image/')
     );
 
     /**
      * @swagger
-     * /files/profile-image/{path}:
+     * /api/files/profile-image/{path}:
      *   get:
      *     summary: fetch profile image
      *     description: Returns the requested profile image as a binary file.
@@ -93,7 +92,7 @@ export const createFilesRouter = (config: FileRouterConfig) => {
 
     /**
      * @swagger
-     * /files/post-image:
+     * /api/files/post-image:
      *   post:
      *     tags:
      *       - Files
@@ -127,12 +126,12 @@ export const createFilesRouter = (config: FileRouterConfig) => {
     router.post(
         '/post-image',
         uploadPostImage.single('postImage'),
-        responseForUploadedFile(serverUrl, 'files/post-image/')
+        responseForUploadedFile(domain, '/api/files/post-image/')
     );
 
     /**
      * @swagger
-     * /files/post-image/{path}:
+     * /api/files/post-image/{path}:
      *   get:
      *     summary: fetch post image
      *     description: Returns the requested post image as a binary file.

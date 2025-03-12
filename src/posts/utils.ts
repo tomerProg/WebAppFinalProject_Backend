@@ -1,5 +1,5 @@
-import { RootFilterQuery } from 'mongoose';
-import { PostModel } from './model';
+import { RootFilterQuery, UpdateQuery } from 'mongoose';
+import { Post, PostModel } from './model';
 import { isNil } from 'ramda';
 
 export interface PostFilter {
@@ -31,7 +31,7 @@ export const buildPostFilter = (
 export const createPostLikeUpdate = (
     userId: string,
     like?: boolean
-): Parameters<PostModel['updateOne']>[1] =>
+): UpdateQuery<Post> =>
     isNil(like)
         ? {
               $pull: { likes: userId, dislikes: userId }

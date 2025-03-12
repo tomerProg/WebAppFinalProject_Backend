@@ -2,20 +2,19 @@ import { ServerConfig } from '../services/server/config';
 import { removeEndingSlash, removeStartingSlash } from '../utils/utils';
 
 export type FileRouterConfig = {
-    serverUrl: string;
+    domain: string;
     profileImagesDestination: string;
     postImagesDestination: string;
 };
 
 export const createFileRouterConfig = (
-    serverConfig: ServerConfig,
-    httpProtocol: 'http' | 'https'
+    serverConfig: ServerConfig
 ): FileRouterConfig => {
-    const { domain, port, postImagesDestination, profileImagesDestination } =
+    const { domain, postImagesDestination, profileImagesDestination } =
         serverConfig;
 
     return {
-        serverUrl: `${httpProtocol}://${removeEndingSlash(domain)}:${port}/`,
+        domain: removeEndingSlash(domain),
         profileImagesDestination: removeStartingSlash(profileImagesDestination),
         postImagesDestination: removeStartingSlash(postImagesDestination)
     };
