@@ -1,17 +1,21 @@
 import { StatusCodes } from 'http-status-codes';
 import { isNil } from 'ramda';
-import { BadRequestError, ForbiddenError, NotFoundError } from '../services/server/exceptions';
+import { ChatGenerator } from '../openai/openai';
+import {
+    BadRequestError,
+    ForbiddenError,
+    NotFoundError
+} from '../services/server/exceptions';
 import { PostModel } from './model';
-import { buildPostFilter, createPostLikeUpdate } from './utils';
+import { createPostLikeUpdate } from './utils';
 import {
     validateCreatePostRequest,
     validateDeletePostRequest,
     validateEditPostRequest,
     validateGetPostByIdRequest,
-    validateGetPostRequest,
+    validateGetPostsRequest,
     validateLikePostRequest
 } from './validators';
-import { ChatGenerator } from '../openai/openai';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
@@ -78,12 +82,17 @@ export const deletePost = (postModel: PostModel) =>
         response.sendStatus(StatusCodes.OK);
     });
 
-export const getAllPosts = (postModel: PostModel) =>
-    validateGetPostRequest(async (request, response) => {
-        const filter = request.body;
-        const posts = await postModel.find(
-            filter ? buildPostFilter(filter) : {}
-        );
+export const getPosts = (postModel: PostModel) =>
+    validateGetPostsRequest(async (request, response) => {
+        const { owner, page, limit } = request.query;
+
+        const filteredQuery = postModel.find(owner ? { owner } : {});
+        const paginationQuery =
+            isNil(page) || isNil(limit)
+                ? filteredQuery
+                : filteredQuery.skip(page * limit).limit(limit);
+        const posts = await paginationQuery.lean();
+
         response.send(posts);
     });
 

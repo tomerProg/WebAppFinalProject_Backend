@@ -119,7 +119,7 @@ describe('posts route', () => {
 
             const response = await request(app)
                 .get('/post')
-                .send({ owner: otherUserId });
+                .query({ owner: otherUserId });
             expect(response.status).toBe(StatusCodes.OK);
             expect(response.body.length).toBe(1);
 
@@ -131,73 +131,6 @@ describe('posts route', () => {
             expect(response.body[0].imageSrc).toBe(otherPost.imageSrc);
         });
 
-        test('user can search posts by title', async () => {
-            const otherUserId: string = new Types.ObjectId().toString();
-            const otherPost: Post & { _id: Types.ObjectId } = {
-                _id: new Types.ObjectId(),
-                title: 'Other Title',
-                owner: otherUserId,
-                description: 'other description'
-            };
-            await postModel.create(otherPost);
-
-            const searchTitle = 'Title';
-            const response = await request(app)
-                .get('/post')
-                .send({ title: searchTitle });
-            expect(response.status).toBe(StatusCodes.OK);
-            expect(response.body.length).toBe(2);
-
-            const expectedPosts = await postModel.find({
-                title: { $regex: searchTitle, $options: 'i' }
-            });
-            expect(response.body.length).toBe(expectedPosts.length);
-            for (
-                let postIndex = 0;
-                postIndex < expectedPosts.length;
-                postIndex++
-            ) {
-                expect(response.body[postIndex]._id).toStrictEqual(
-                    expectedPosts[postIndex]._id.toString()
-                );
-                expect(response.body[postIndex].title).toStrictEqual(
-                    expectedPosts[postIndex].title
-                );
-                expect(response.body[postIndex].description).toStrictEqual(
-                    expectedPosts[postIndex].description
-                );
-                expect(response.body[postIndex].suggestion).toStrictEqual(
-                    expectedPosts[postIndex].suggestion
-                );
-                expect(response.body[postIndex].imageSrc).toStrictEqual(
-                    expectedPosts[postIndex].imageSrc
-                );
-            }
-        });
-        test('user can search posts by title and owner', async () => {
-            const otherUserId: string = new Types.ObjectId().toString();
-            const otherPost: Post & { _id: Types.ObjectId } = {
-                _id: new Types.ObjectId(),
-                title: 'Other Title',
-                owner: otherUserId,
-                description: 'other description'
-            };
-            await postModel.create(otherPost);
-
-            const searchTitle = 'Title';
-            const response = await request(app)
-                .get('/post')
-                .send({ title: searchTitle, owner: otherUserId });
-
-            expect(response.status).toBe(StatusCodes.OK);
-            expect(response.body.length).toBe(1);
-            expect(response.body[0]._id).toBe(otherPost._id.toString());
-            expect(response.body[0].owner).toBe(otherPost.owner);
-            expect(response.body[0].description).toBe(otherPost.description);
-            expect(response.body[0].title).toBe(otherPost.title);
-            expect(response.body[0].suggestion).toBe(otherPost.suggestion);
-            expect(response.body[0].imageSrc).toBe(otherPost.imageSrc);
-        });
         test('user can search a post by its id', async () => {
             const response = await request(app).get(`/post/${testPost._id}`);
 
@@ -209,6 +142,25 @@ describe('posts route', () => {
             expect(response.body.title).toBe(testPost.title);
             expect(response.body.suggestion).toBe(testPost.suggestion);
             expect(response.body.imageSrc).toBe(testPost.imageSrc);
+        });
+
+        test('get posts with page and limit should return the correct page', async () => {
+            const otherUserId: string = new Types.ObjectId().toString();
+            const otherPost: Post & { _id: Types.ObjectId } = {
+                _id: new Types.ObjectId(),
+                title: 'Other Title',
+                owner: otherUserId,
+                description: 'other description'
+            };
+            await postModel.create(otherPost);
+            const limit = 1;
+            const response = await request(app)
+                .get('/post')
+                .query({ page: 1, limit });
+            expect(response.status).toBe(StatusCodes.OK);
+            expect(response.body.length).toBe(limit);
+            expect(response.body[0]._id).toBe(otherPost._id.toString());
+            
         });
     });
 

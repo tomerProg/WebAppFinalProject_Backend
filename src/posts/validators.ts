@@ -48,14 +48,14 @@ export const validateDeletePostRequest = validateRequest(
 );
 
 const getPostRequestZodSchema = z.object({
-    body: z.object({
-        title: z.string().optional(),
-        description: z.string().optional(),
-        owner: z.string().optional()
+    query: z.object({
+        owner: z.string().optional(),
+        page: z.coerce.number().int().gte(0).optional(),
+        limit: z.coerce.number().int().positive().optional()
     })
 });
 export type GetPostRequest = z.infer<typeof getPostRequestZodSchema>;
-export const validateGetPostRequest = validateRequest(getPostRequestZodSchema);
+export const validateGetPostsRequest = validateRequest(getPostRequestZodSchema);
 
 const paramsWithIdZodScheam = z.object({
     params: z.object({
