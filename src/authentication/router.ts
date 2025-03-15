@@ -2,7 +2,7 @@ import { RequestHandler, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { AuthConfig } from './config';
 import { AuthRouterDependencies } from './dependencies';
-import * as authHandlers from './handlers';
+import * as authHandlers from './controller';
 import axios from 'axios';
 /**
  * @swagger

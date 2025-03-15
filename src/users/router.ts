@@ -1,6 +1,6 @@
 import { RequestHandler, Router } from 'express';
 import { UsersRouterDependencies } from './dependencies';
-import * as usersHandlers from './handlers';
+import * as usersHandlers from './controller';
 
 /**
  * @swagger
