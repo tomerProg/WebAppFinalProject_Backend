@@ -1,7 +1,6 @@
 import { RequestHandler, Router } from 'express';
-import { PostsRouterDependencies } from './dependencies';
 import * as postsController from './controller';
-import { ChatGenerator } from '../openai/openai';
+import { PostsRouterDependencies } from './dependencies';
 
 /**
  * @swagger
@@ -14,7 +13,10 @@ const buildRouteHandlers = (
     dependencies: PostsRouterDependencies
 ): Record<keyof typeof postsController, RequestHandler> => ({
     editPost: postsController.editPost(dependencies.postModel),
-    createPost: postsController.createPost(dependencies.postModel, dependencies.chatGenerator),
+    createPost: postsController.createPost(
+        dependencies.postModel,
+        dependencies.chatGenerator
+    ),
     deletePost: postsController.deletePost(dependencies.postModel),
     getPosts: postsController.getPosts(dependencies.postModel),
     getPostById: postsController.getPostById(dependencies.postModel),
@@ -175,10 +177,6 @@ export const createPostsRouter = (
      *                  type: string
      *                  description: post new desctiption
      *                  example: new description
-     *              suggestion:
-     *                  type: string
-     *                  description: post new suggestion
-     *                  example: new suggestion
      *              imageSrc:
      *                 type: string
      *                 description: path (in server) of a new post image

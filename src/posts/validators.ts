@@ -7,7 +7,6 @@ const editPostRequestZodSchema = authenticatedRequestZodSchema.and(
         body: z.object({
             title: z.string().optional(),
             description: z.string().optional(),
-            suggestion: z.string().optional(),
             imageSrc: z.string().optional()
         }),
         params: z.object({

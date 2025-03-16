@@ -16,11 +16,12 @@ import {
     validateGetPostsRequest,
     validateLikePostRequest
 } from './validators';
+import { pickDefinedValues } from '../utils/utils';
 
 export const editPost = (postModel: PostModel) =>
     validateEditPostRequest(async (request, response) => {
         const { id: postId } = request.params;
-        const { title, description, suggestion, imageSrc } = request.body;
+        const { title, description, imageSrc } = request.body;
         const originalPost = await postModel.findById(postId).lean();
         if (!originalPost) {
             throw new BadRequestError('post does not exist');
@@ -33,7 +34,7 @@ export const editPost = (postModel: PostModel) =>
 
         const { modifiedCount } = await postModel.updateOne(
             { _id: postId, owner: user },
-            { title, description, suggestion, imageSrc }
+            pickDefinedValues({ title, description, imageSrc })
         );
 
         if (!modifiedCount || modifiedCount === 0) {
