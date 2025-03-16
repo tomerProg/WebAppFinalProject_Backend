@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import * as fs from 'fs';
 import { FileRouterConfig } from './config';
-import { responseForUploadedFile } from './handlers';
+import { responseForUploadedFile } from './controller';
 import { createMulterUpload } from './logic';
 
 /**
